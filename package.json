@@ -90,7 +90,7 @@
     "sonner": "^2.0.1",
     "stripe": "^14.16.0",
     "svix": "^1.13.0",
-    "tailwind-merge": "^2.3.0",
+    "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.5"
   },
