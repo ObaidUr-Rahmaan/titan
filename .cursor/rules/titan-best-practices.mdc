@@ -11,7 +11,7 @@ Key Principles
 - Prefer iteration and modularization over code duplication.
 - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
 - Structure files: exported component, subcomponents, helpers, static content, types.
-- Use bun for all commands related to this project and installing 3rd party packages unless otherwise stated in it's documentation.
+- Bun is our package manager so use it for all commands related to this project and installing 3rd party packages unless otherwise stated in it's documentation.
 
 
 Naming Conventions
