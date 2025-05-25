@@ -51,7 +51,6 @@ async function main() {
       "   ╚═╝   ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═══╝"
     ].join('\n');
     console.log(chalk.cyan(titanLogo));
-    console.log(chalk.cyan('\n🚀 Welcome to Titan CLI!\n'));
     console.log(chalk.yellow('Pre-requisites check:'));
     console.log(chalk.yellow('1. The following connection info is ready:'));
     console.log(chalk.yellow('   - Clerk (Publishable Key & Secret Key)'));
