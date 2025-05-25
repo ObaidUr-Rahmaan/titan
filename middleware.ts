@@ -71,7 +71,8 @@ export default function middleware(req: any) {
       
       // If user is not authenticated and tries to access protected routes
       if (!userId && (isProtectedRoute(req) || isOnboardingRoute(req))) {
-        return auth().redirectToSignIn();
+        // Redirect to sign-in, CSP will be applied by next.config.js
+        return auth().redirectToSignIn({ returnBackUrl: req.url });
       }
       
       // User is authenticated
@@ -79,6 +80,7 @@ export default function middleware(req: any) {
         // Check if user is trying to access the sign-in or sign-up pages
         if (path.startsWith('/sign-in') || path.startsWith('/sign-up')) {
           // We'll use a redirect to dashboard first, then let dashboard layout handle onboarding check
+          // CSP will be applied by next.config.js
           return NextResponse.redirect(new URL('/dashboard', req.url));
         }
         
@@ -94,18 +96,21 @@ export default function middleware(req: any) {
         
         // If user is authenticated, they can access onboarding directly
         if (path.startsWith('/onboarding')) {
-          return NextResponse.next();
+          return NextResponse.next(); // CSP will be applied by next.config.js
         }
         
         // If user is going to home page and is authenticated, redirect them to dashboard
         if (path === '/') {
+          // Preserve existing headers when redirecting
+          // CSP will be applied by next.config.js
           return NextResponse.redirect(new URL('/dashboard', req.url));
         }
       }
       
-      return NextResponse.next();
+      return NextResponse.next(); // CSP will be applied by next.config.js
     })(req);
   } else {
+    // CSP will be applied by next.config.js
     return NextResponse.next();
   }
 }
