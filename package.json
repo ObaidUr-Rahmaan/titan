@@ -9,6 +9,12 @@
     "lint": "biome lint .",
     "format": "biome format . --write",
     "check": "biome check --apply .",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
     "publish-titan": "./publish-cli.sh",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -96,15 +102,24 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@clerk/testing": "^1.7.3",
+    "@playwright/test": "^1.49.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/node": "^22.13.10",
     "@types/pg": "^8.11.11",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^2.1.8",
     "autoprefixer": "latest",
     "drizzle-kit": "^0.30.5",
+    "jsdom": "^25.0.1",
     "postcss": "latest",
     "tailwindcss": "^3.3.5",
     "tsx": "^4.19.3",
-    "typescript": "latest"
+    "typescript": "latest",
+    "vitest": "^2.1.8"
   }
 }

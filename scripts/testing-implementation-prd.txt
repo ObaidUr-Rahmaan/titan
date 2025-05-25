@@ -1,0 +1,93 @@
+Product Requirements Document: Testing Infrastructure Implementation for Titan
+
+PROJECT OVERVIEW
+Implement a comprehensive testing infrastructure for the Titan SaaS boilerplate, including unit testing with Vitest, end-to-end testing with Playwright, and continuous integration via GitHub Actions.
+
+OBJECTIVES
+1. Set up unit testing framework with Vitest for component and utility testing
+2. Configure end-to-end testing with Playwright for critical user flows
+3. Implement GitHub Actions workflow for automated testing on pull requests
+4. Ensure security best practices for handling environment variables in CI/CD
+5. Provide clear documentation and examples for future test development
+
+TECHNICAL REQUIREMENTS
+
+Testing Frameworks:
+- Vitest for unit testing (Next.js compatible, TypeScript support)
+- Playwright for E2E testing (cross-browser support)
+- Testing Library for React component testing
+- Coverage reporting with @vitest/coverage-v8
+
+CI/CD Requirements:
+- GitHub Actions workflow triggered on pull requests
+- Biome formatter and linter checks
+- Unit test execution with coverage reporting
+- E2E test execution across multiple browsers
+- TypeScript type checking
+- Build verification
+- Secure handling of environment variables
+
+Security Requirements:
+- No hardcoded credentials in version control
+- Use of .env.test.example for safe defaults
+- GitHub Secrets integration for sensitive test data
+- Proper mocking of external services in tests
+
+IMPLEMENTATION DETAILS
+
+1. Package Dependencies:
+   - Add testing libraries to devDependencies
+   - Configure test scripts in package.json
+   - Ensure compatibility with existing Bun package manager
+
+2. Configuration Files:
+   - vitest.config.ts with Next.js compatibility
+   - playwright.config.ts with browser configurations
+   - Test setup files for global mocks and utilities
+
+3. Test Structure:
+   - Unit tests in __tests__ directories next to components
+   - E2E tests in /e2e directory at project root
+   - Test utilities and helpers in /test directory
+
+4. Example Tests:
+   - Button component unit test
+   - Utility function test (cn function)
+   - Homepage E2E test
+   - Authentication flow E2E test
+
+5. GitHub Actions Workflow:
+   - Separate jobs for different test types
+   - Dependency caching for performance
+   - Artifact uploads for test results
+   - Proper environment variable handling
+
+6. Documentation:
+   - Testing guide in test/README.md
+   - Security documentation for credential management
+   - Best practices and troubleshooting guide
+
+ACCEPTANCE CRITERIA
+1. All test commands run successfully locally
+2. GitHub Actions workflow passes on pull requests
+3. Test coverage reports are generated and accessible
+4. No security vulnerabilities from exposed credentials
+5. Clear documentation for adding new tests
+6. Example tests demonstrate best practices
+
+DELIVERABLES
+1. Updated package.json with test dependencies and scripts
+2. Vitest configuration file
+3. Playwright configuration file
+4. Test setup and utility files
+5. Example unit and E2E tests
+6. GitHub Actions workflow file
+7. Security-focused environment configuration
+8. Comprehensive testing documentation
+
+SUCCESS METRICS
+- Zero failing tests in initial implementation
+- 80%+ code coverage on example components
+- Sub-5 minute CI/CD pipeline execution
+- No exposed credentials in version control
+- Easy onboarding for developers to write new tests 
