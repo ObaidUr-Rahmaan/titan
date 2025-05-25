@@ -38,7 +38,6 @@ async function main() {
       "   \u255A\u2550\u255D   \u255A\u2550\u255D   \u255A\u2550\u255D   \u255A\u2550\u255D  \u255A\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u2550\u2550\u255D"
     ].join("\n");
     console.log(chalk.cyan(titanLogo));
-    console.log(chalk.cyan("\n\u{1F680} Welcome to Titan CLI!\n"));
     console.log(chalk.yellow("Pre-requisites check:"));
     console.log(chalk.yellow("1. The following connection info is ready:"));
     console.log(chalk.yellow("   - Clerk (Publishable Key & Secret Key)"));

@@ -494,7 +494,7 @@ async function main() {
       spinner.start('Configuring payments...');
       envContent += `STRIPE_SECRET_KEY=${paymentConfig.stripeSecretKey}\n`;
       envContent += `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${paymentConfig.stripePublicKey}\n`;
-      envContent += `NEXT_PUBLIC_STRIPE_PRICE_ID=${paymentConfig.stripePriceId}\n\n`;
+      envContent += `NEXT_PUBLIC_STRIPE_PRODUCT_1_PRICE_ID=${paymentConfig.stripePriceId}\n\n`;
       spinner.succeed('Payments configured');
 
       // Email Configuration
