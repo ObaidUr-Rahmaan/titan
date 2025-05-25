@@ -1,5 +1,4 @@
 'use client';
-import { Footer } from '@/components/wrapper/footer';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -61,7 +60,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <main className="flex min-h-screen flex-col items-center bg-black justify-between w-full overflow-hidden">
         {children}
       </main>
-      <Footer />
     </div>
   );
 } 

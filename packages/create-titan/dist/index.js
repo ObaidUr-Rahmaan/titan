@@ -423,7 +423,7 @@ Error: Directory ${projectName} already exists. Please choose a different name o
 `;
       envContent += `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${paymentConfig.stripePublicKey}
 `;
-      envContent += `NEXT_PUBLIC_STRIPE_PRICE_ID=${paymentConfig.stripePriceId}
+      envContent += `NEXT_PUBLIC_STRIPE_PRODUCT_1_PRICE_ID=${paymentConfig.stripePriceId}
 
 `;
       spinner.succeed("Payments configured");
