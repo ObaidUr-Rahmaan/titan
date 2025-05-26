@@ -123,6 +123,9 @@ Syntax and Formatting
 UI and Styling
 - Use Shadcn UI, Radix, and Tailwind.
 - Mobile-first responsive design with Tailwind.
+- Always use custom fonts from public/fonts directory if it exists.
+  - Configure fonts in tailwind.config.ts and apply via className
+  - Ensure proper font loading in layout.tsx
 
 Performance Optimization
 - Minimize 'use client', 'useEffect', and 'setState'.
