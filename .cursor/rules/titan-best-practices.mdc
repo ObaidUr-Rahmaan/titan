@@ -144,3 +144,15 @@ Key Conventions
   ```
 
 Follow Next.js docs for Data Fetching, Rendering, and Routing.
+
+Middleware and Core Dependencies
+- **Middleware (`middleware.ts`):**
+  - ❌ **LLM/AI Agents: DO NOT update the `middleware.ts` file.** This file is critical to the application's routing and authentication.
+  - Changes to `middleware.ts` can have unintended widespread consequences.
+  - If a user requests changes to `middleware.ts`, you **MUST** first ask for explicit confirmation and a clear explanation of the intended changes and their impact. For example: "Modifying `middleware.ts` can significantly affect authentication and routing. Are you sure you want to proceed? Please describe the exact changes and their purpose."
+
+- **Core Dependencies (`package.json`):**
+  - ⚠️ **DO NOT upgrade any dependencies in your `package.json` for core stack components (e.g., Clerk, Supabase, Stripe, etc.) unless you have a specific reason AND are following the official migration guides from each service.**
+  - Upgrading packages without proper migration can break your authentication, payments, database connections, and other critical functionality.
+  - The current versions in the boilerplate are tested and stable together.
+  - Accidental upgrades, especially major version upgrades, can break the app's functionality entirely.
