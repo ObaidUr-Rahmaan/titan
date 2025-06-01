@@ -2,7 +2,6 @@ import MarketingCards from '@/components/homepage/marketing-cards';
 import Pricing from '@/components/homepage/pricing';
 import SideBySide from '@/components/homepage/side-by-side';
 import PageWrapper from '@/components/wrapper/page-wrapper';
-import { WaitlistForm } from '@/lib/components/waitlist-form';
 import FloatingCTA from '@/components/homepage/floating-cta';
 import FAQ from '@/components/homepage/faq';
 import HeroSection from '@/components/homepage/hero-section';
@@ -30,12 +29,6 @@ export default function Home() {
       <section id="pricing" className="flex justify-center items-center w-full py-24 md:py-16 min-h-[600px] px-4 sm:px-6">
         <div className="w-full max-w-6xl mx-auto">
           <Pricing />
-        </div>
-      </section>
-      
-      <section id="waitlist" className="flex justify-center items-center w-full py-24 md:py-24 min-h-[400px] px-4 sm:px-6">
-        <div className="w-full max-w-2xl mx-auto">
-          <WaitlistForm />
         </div>
       </section>
       

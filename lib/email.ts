@@ -8,6 +8,7 @@ interface EmailProps {
   url: string;
 }
 
+// Example email
 export function Email({ url }: EmailProps) {
   return React.createElement(
     Html,
