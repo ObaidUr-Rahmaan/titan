@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: [
+    /.*\.ngrok(?:-free)?\.app$/,
+  ],
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
