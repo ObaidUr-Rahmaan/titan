@@ -542,7 +542,7 @@ FRONTEND_URL=http://localhost:3000
 # Payments - Stripe (https://stripe.com)
 STRIPE_SECRET_KEY=your_stripe_secret_key
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-NEXT_PUBLIC_STRIPE_PRICE_ID=your_stripe_price_id
+NEXT_PUBLIC_STRIPE_PRODUCT_1_PRICE_ID=your_stripe_price_id
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 
 # Email - Plunk (https://useplunk.com)
