@@ -1,0 +1,91 @@
+# [Project Name] MVP - PRD
+
+## Project Overview
+[Brief description of what the project does, target audience, and core value proposition. Include the main problem being solved and how this solution addresses it.]
+
+## Tech Stack
+- [Frontend Framework] (NextJS 15 with App Router)
+- [Authentication Service] (Clerk)
+- [Database] (Supabase, PostgreSQL)
+- [ORM/Database Layer] (Drizzle)
+- [Payment Processing] (Stripe)
+- [Email Service] (Plunk)
+- [External APIs] (List any third-party integrations)
+- [Deployment Platform] (Vercel)
+
+## Cost Estimations
+[Cost estimations for the project, including development, hosting, and other expenses.]
+[Projection of revenue and profitability.]
+
+## Database Schema
+List all main entities and their relationships:
+- [Entity 1] (description of purpose and key fields)
+- [Entity 2] (description of purpose and key fields)
+- [Entity 3] (description of purpose and key fields)
+- [Add more as needed]
+
+## Core Features to Implement
+
+### 1. [Feature Category 1]
+- [Specific feature/functionality]
+- [Related functionality]
+- [API endpoints needed]
+- [Key business logic]
+
+### 2. [Feature Category 2]
+- [Specific feature/functionality]
+- [Related functionality]
+- [Integration requirements]
+- [User interface needs]
+
+### 3. [Feature Category 3]
+- [Specific feature/functionality]
+- [Related functionality]
+- [Performance requirements]
+- [Security considerations]
+
+Add more features as needed.
+
+## Key Business Rules
+- [Rule 1: Describe important business logic or constraints]
+- [Rule 2: User tier limitations or permissions]
+- [Rule 3: Pricing and subscription rules]
+- [Rule 4: Data retention and cleanup policies]
+- [Rule 5: Notification and communication rules]
+- [Add more specific business rules as needed]
+
+## MVP Success Criteria
+- [Metric 1]: [Target percentage/number] (e.g. conversion rate)
+- [Metric 2]: [Target percentage/number] (e.g. user retention)
+- [Metric 3]: [Target time/performance] (e.g. load times)
+- [Metric 4]: [Target percentage/number] (e.g. success rates)
+- [Metric 5]: [Target engagement/usage] (e.g., feature adoption)
+
+## Development Priorities
+1. **High Priority**: [Critical features needed for launch]
+2. **Medium Priority**: [Important features for user experience]
+3. **Low Priority**: [Nice-to-have features for future iterations]
+
+## Technical Considerations
+- [Performance requirements and constraints]
+- [Security and compliance needs]
+- [Scalability considerations]
+- [Integration challenges]
+- [Data migration or legacy system considerations]
+
+## User Stories & Acceptance Criteria
+### [User Type 1]
+- As a [user type], I want to [action] so that [benefit]
+- Acceptance criteria: [specific testable requirements]
+
+### [User Type 2]
+- As a [user type], I want to [action] so that [benefit]
+- Acceptance criteria: [specific testable requirements]
+
+## Risk Assessment
+- [Technical Risk 1]: [Mitigation strategy]
+- [Business Risk 1]: [Mitigation strategy]
+- [Timeline Risk 1]: [Mitigation strategy]
+- [Resource Risk 1]: [Mitigation strategy]
+
+This MVP will provide [describe the value and foundation the MVP establishes for future growth and feature development]. 
