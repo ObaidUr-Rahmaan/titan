@@ -1,0 +1,162 @@
+# Titan Upgrade Analysis: [PROJECT_NAME] - PRD
+
+## Project Overview
+Systematically analyze the evolved project "[PROJECT_NAME]" to extract improvements, patterns, and optimizations that can be safely migrated back to the main Titan boilerplate. This analysis will identify enhancements across all major SaaS domains while maintaining backward compatibility and following progressive enhancement principles.
+
+**Target Outcome**: Enhanced Titan boilerplate that incorporates real-world learnings from [PROJECT_NAME], making future Titan-generated projects benefit from battle-tested improvements.
+
+## Tech Stack
+- **Frontend**: Next.js 15.2.3 with App Router, React, TypeScript
+- **Styling**: Tailwind CSS, Shadcn UI, Radix UI components
+- **Database**: Supabase (PostgreSQL) with Drizzle ORM
+- **Authentication**: Clerk (user management, session handling)
+- **Payments**: Stripe (subscriptions, webhooks, billing)
+- **Email**: Plunk (transactional emails, templates)
+- **Rate Limiting**: Upstash Redis
+- **Analytics**: DataFast (user analytics, growth tracking)
+- **Feedback**: UserJot (bug reports, feature requests, roadmap)
+- **Support**: GetFernand (customer support system)
+- **Package Manager**: Bun
+- **Linting**: Biome (code formatting and linting)
+- **Deployment**: Vercel
+- **Analysis Target**: [PROJECT_NAME] (evolved from Titan)
+- **Analysis Tools**: TaskMaster MCP, Cursor AI, vibe-tools for intelligent comparison
+
+**📋 Framework Assessment**: Next.js version (`"next": "^15.2.3"`) upgrades require research-backed analysis of breaking changes, new features, migration complexity, and benefits before application.
+
+## Project Context
+- **Evolved Project Path**: `./evolved-projects/[PROJECT_NAME]/`
+- **Development Duration**: [TIME_SPAN] (e.g., "6 months of active development")
+- **Project Scale**: [SCALE_DESCRIPTION] (e.g., "Production SaaS with 500+ users")
+- **Known Major Improvements**: [LIST_KEY_AREAS] (e.g., "Enhanced auth flows, automated billing, improved performance")
+
+## Analysis Domains & Scope
+
+### Core Infrastructure Analysis
+1. **Authentication System**: `middleware.ts`, `app/(auth)/`, Clerk integrations, session handling, user profiles
+2. **Payment System**: `app/api/payments/`, Stripe webhooks, subscription management, billing automation
+3. **Database Layer**: `db/schema/`, Drizzle migrations, query optimizations, connection pooling
+4. **Email System**: Plunk integrations, email templates, delivery optimization, transactional flows
+
+### Development Experience Analysis  
+5. **Scripts & Tooling**: `package.json` scripts, `scripts/` directory, Bun workflows, build optimizations, dependency management
+6. **Component Library**: `components/ui/` (Shadcn), `components/wrapper/`, `components/homepage/`, `components/magicui/`
+7. **Configuration**: `next.config.js`, `tailwind.config.ts`, `drizzle.config.ts`, `biome.json`, TypeScript configs
+
+### Quality & Performance Analysis
+8. **Error Handling**: Better error boundaries, monitoring integrations, logging strategies
+9. **Testing Patterns**: Comprehensive test coverage, E2E improvements, mock strategies
+10. **Performance Optimizations**: Bundle optimization, caching strategies, lazy loading
+11. **Security Implementations**: Input validation, CSRF protection, compliance features
+
+### User Experience Analysis
+12. **UX Patterns**: Onboarding flows, loading states, accessibility improvements
+13. **Analytics & Tracking**: Event tracking, A/B testing, feature flags
+
+### Integration Analysis
+14. **API & Third-Party**: `app/api/` routes, webhook handling (`app/api/payments/webhook/`, `app/api/auth/webhook/`), external service wrappers
+15. **Background Jobs**: Queue implementations, cron patterns, automation scripts in `scripts/`
+16. **SEO & Meta**: Dynamic meta tags, sitemap generation, schema markup, App Router metadata
+17. **Mobile & PWA**: Mobile patterns, responsive design with Tailwind, touch interactions
+
+### Titan-Specific Analysis
+18. **CLI Package**: `packages/create-titan/` improvements, template generation, setup scripts
+19. **Utility Functions**: `utils/actions/`, `utils/data/`, `utils/hook/` patterns and optimizations
+20. **App Structure**: `app/(auth)/`, `app/(marketing)/`, `app/dashboard/` route organization improvements
+
+## Key Analysis Objectives
+
+### Primary Goals
+- **Comprehensive Domain Coverage**: Analyze all 17 domains systematically without gaps
+- **Evidence-Based Documentation**: Every improvement must include file paths and code examples
+- **Safe Migration Planning**: Assess complexity, backward compatibility, and implementation risk
+- **Quality Assessment**: Evaluate impact, reusability, and maintainability of each improvement
+
+### Success Criteria
+- **Complete Analysis**: All domains covered with documented findings
+- **Actionable Improvements**: Clear migration tasks created for viable enhancements  
+- **Risk Assessment**: Every improvement categorized by complexity and compatibility impact
+- **Implementation Roadmap**: Prioritized tasks ready for systematic execution
+
+## Migration Safety Requirements
+
+### Backward Compatibility Rules
+- All new features must be opt-in enhancements
+- Existing API interfaces must remain unchanged
+- Progressive enhancement approach for all improvements
+- No breaking changes without explicit deprecation process
+
+### Quality Gates
+- Every improvement requires working code example from evolved project
+- Migration complexity must be assessed (Easy/Medium/Hard)
+- Impact evaluation required (High/Medium/Low)
+- Testing verification needed for all changes
+
+### Risk Mitigation
+- Atomic commits for each improvement
+- Rollback procedures documented
+- CLI functionality validated after each change
+- Generated project compatibility verified
+
+## Analysis Methodology
+
+### Phase 1: Structural Comparison
+- Directory structure analysis and new file discovery
+- Package.json dependencies and configuration changes
+- High-level architectural differences identification
+
+### Phase 2: Domain-Specific Analysis
+- File-by-file comparison for each of the 17 domains
+- Pattern extraction and improvement identification
+- Code quality assessment and business logic evaluation
+
+### Phase 3: Migration Planning
+- Complexity assessment and dependency analysis
+- Backward compatibility impact evaluation
+- Implementation prioritization and task creation
+
+### Phase 4: Implementation
+- Systematic migration following safety patterns
+- Testing and validation at each step
+- Documentation updates and CLI verification
+
+## Expected Deliverables
+
+### Analysis Documentation
+- Comprehensive findings report for each domain
+- Code examples and migration recommendations
+- Risk assessment and complexity evaluation
+
+### Implementation Tasks
+- Prioritized TaskMaster tasks for each viable improvement
+- Clear migration instructions and safety guidelines
+- Testing requirements and validation procedures
+
+### Updated Titan Boilerplate
+- Enhanced boilerplate incorporating approved improvements
+- Maintained backward compatibility and CLI functionality
+- Updated documentation reflecting new capabilities
+
+## Technical Considerations
+
+### Analysis Tools
+- **TaskMaster MCP**: For systematic task management and progress tracking
+- **Cursor AI**: For code analysis and improvement extraction
+- **vibe-tools repo**: For intelligent code comparison and pattern analysis
+- **Git diff tools**: For file-by-file comparison and change tracking
+- **Bun**: Package management and script execution analysis
+- **Biome**: Code quality and formatting pattern improvements
+
+### Documentation Standards
+- All findings logged in TaskMaster subtasks with timestamps
+- Code examples must be complete and functional
+- Migration instructions must be step-by-step and clear
+- Risk assessments must be realistic and actionable
+
+### Validation Requirements
+- CLI generation testing after each major change
+- Generated project build and functionality verification
+- Backward compatibility testing with existing projects
+- Performance impact assessment for all optimizations
+
+This systematic analysis will ensure that valuable improvements from [PROJECT_NAME] are safely and effectively integrated into Titan, creating a better foundation for future SaaS projects while maintaining the reliability and ease-of-use that makes Titan valuable. 

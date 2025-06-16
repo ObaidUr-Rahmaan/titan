@@ -1,0 +1,186 @@
+# Project Upgrade to Latest Titan: [PROJECT_NAME] - PRD
+
+## Project Overview
+Systematically upgrade the existing project "[PROJECT_NAME]" to incorporate the latest improvements, patterns, and optimizations from the current Titan boilerplate. This upgrade will selectively apply enhancements that are compatible with the existing project while maintaining stability and avoiding breaking changes.
+
+**Target Outcome**: Enhanced project that benefits from the latest Titan improvements without disrupting existing functionality, applied through a safe, systematic, and reversible process.
+
+## Tech Stack Analysis
+- **Current Project**: [PROJECT_NAME] (built from Titan v[VERSION] on [DATE])
+- **Target Titan Version**: Latest Titan boilerplate improvements
+- **Project Tech Stack**: Next.js 15.2.3, Supabase, Drizzle, Clerk, Stripe, Plunk, Bun, etc.
+- **Project Customizations**: [LIST_MAJOR_CUSTOMIZATIONS] (e.g., "Custom auth flows, additional APIs, specific UI components")
+- **Project Scale**: [SCALE_DESCRIPTION] (e.g., "MVP with 50 users", "Production app with 1000+ users")
+- **Upgrade Tools**: TaskMaster MCP, Cursor AI, Git branching for safety, Bun package management
+
+**📋 Framework Assessment**: Next.js version (`"next": "^15.2.3"`) upgrades require thorough research of release notes, breaking changes, migration guides, and benefit analysis before application.
+
+## Project Context
+- **Current Project Path**: `./` (current working directory)
+- **Latest Titan Reference**: `./titan-latest/` (cloned latest Titan for comparison)
+- **Project Age**: [TIME_SINCE_SCAFFOLD] (e.g., "3 months since scaffolded from Titan")
+- **Last Upgrade**: [LAST_UPGRADE_DATE] (e.g., "Never upgraded" or "Last upgraded 1 month ago")
+- **Risk Tolerance**: [RISK_LEVEL] (e.g., "Conservative - only safe improvements", "Moderate - some breaking changes OK")
+
+## Upgrade Analysis Domains
+
+### Core Infrastructure Upgrades
+1. **Authentication System**: Compare `middleware.ts`, `app/(auth)/` with latest Titan auth improvements
+2. **Payment System**: Analyze `app/api/payments/` for new Stripe integration patterns and billing features  
+3. **Database Layer**: Review `db/schema/` for new Drizzle patterns, migration improvements, query optimizations
+4. **Email System**: Check email integrations for Plunk improvements, new template patterns
+
+### Development Experience Upgrades
+5. **Scripts & Tooling**: Compare `package.json`, `scripts/` for new Bun automation, build optimizations
+6. **Component Library**: Analyze `components/` for new Shadcn components, improved patterns, accessibility
+7. **Configuration**: Review config files for performance, security, and developer experience improvements
+
+### Quality & Performance Upgrades  
+8. **Error Handling**: Check for improved error boundaries, monitoring, logging patterns
+9. **Testing Patterns**: Look for new testing approaches, better coverage, E2E improvements
+10. **Performance**: Analyze bundle optimizations, caching strategies, loading improvements
+11. **Security**: Review for enhanced validation, protection mechanisms, compliance features
+
+### User Experience Upgrades
+12. **UX Patterns**: Compare onboarding, loading states, empty states, user feedback patterns
+13. **Analytics & Tracking**: Check for improved analytics, A/B testing, feature flag implementations
+
+### Integration Upgrades
+14. **API Improvements**: Review `app/api/` for better patterns, webhook handling, versioning
+15. **Background Jobs**: Check for new automation, queue, and scheduled task patterns
+16. **SEO & Meta**: Analyze meta tag handling, sitemap generation, schema markup improvements
+17. **Mobile & PWA**: Review responsive patterns, mobile optimizations, PWA features
+
+### Titan-Specific Upgrades
+18. **Utility Functions**: Compare `utils/actions/`, `utils/data/`, `utils/hook/` for new patterns
+19. **App Structure**: Review route organization, page patterns, layout improvements
+20. **Third-Party Integrations**: Check for DataFast, UserJot, GetFernand integration improvements
+
+## Upgrade Strategy & Safety
+
+### Safety-First Approach
+- **Branch Creation**: Create `upgrade/titan-latest` branch before any changes
+- **Incremental Application**: Apply improvements one domain at a time
+- **Testing Between Changes**: Verify functionality after each domain upgrade
+- **Rollback Plan**: Document how to revert each change if issues arise
+
+### Compatibility Assessment
+- **Breaking Change Detection**: Identify improvements that might break existing functionality
+- **Custom Code Protection**: Preserve project-specific customizations and business logic
+- **Dependency Conflicts**: Check for package version conflicts and resolve safely
+- **API Compatibility**: Ensure external API integrations continue working
+
+### Selection Criteria
+- **Impact vs Risk**: Prioritize high-impact, low-risk improvements
+- **Project Relevance**: Only apply improvements relevant to project's current features
+- **Maintenance Burden**: Consider ongoing maintenance implications of new patterns
+- **Team Familiarity**: Factor in team's ability to maintain new patterns
+
+## Upgrade Implementation Plan
+
+### Phase 1: Analysis & Planning
+- Clone latest Titan for comparison reference
+- Analyze current project structure and customizations  
+- Identify applicable improvements from each domain
+- Create upgrade tasks with risk assessment and priority
+
+### Phase 2: Safe Upgrade Execution
+- Create upgrade branch for safety
+- Apply improvements systematically by domain
+- Test functionality after each domain upgrade
+- Document all changes and decisions made
+
+### Phase 3: Validation & Integration
+- Comprehensive testing of upgraded functionality
+- Performance benchmarking vs previous version
+- Review all changes for completeness and correctness
+- Merge to main branch or provide detailed upgrade summary
+
+### Phase 4: Documentation & Cleanup
+- Document new patterns and improvements adopted
+- Update project README and developer documentation
+- Clean up temporary files and upgrade artifacts
+- Create upgrade summary report for team review
+
+## Upgrade Success Criteria
+
+### Technical Success
+- **All Tests Pass**: Existing functionality continues working correctly
+- **Performance Maintained**: No degradation in load times or responsiveness  
+- **Build Success**: Project builds and deploys without errors
+- **Dependency Compatibility**: All packages work together without conflicts
+
+### Business Success
+- **Feature Preservation**: All existing features continue working as expected
+- **User Experience**: No negative impact on user flows or interface
+- **Data Integrity**: No data loss or corruption during upgrade process
+- **Team Productivity**: New patterns improve rather than hinder development speed
+
+### Quality Gates
+- **Code Quality**: Improved code organization, TypeScript usage, error handling
+- **Security Posture**: Enhanced security without breaking existing protections
+- **Documentation**: Clear understanding of what changed and why
+- **Maintainability**: Easier to maintain and extend going forward
+
+## Risk Assessment & Mitigation
+
+### High-Risk Changes (Require Careful Review)
+- Authentication middleware modifications
+- Database schema changes  
+- Payment processing updates
+- Core API route changes
+- Build configuration modifications
+
+### Medium-Risk Changes (Test Thoroughly)
+- Component library updates
+- Utility function enhancements
+- Configuration file changes
+- Development script improvements
+- Third-party integration updates
+
+### Low-Risk Changes (Safe to Apply)
+- New optional components
+- Additional utility functions
+- Documentation improvements
+- Optional configuration enhancements
+- Non-breaking feature additions
+
+## Expected Deliverables
+
+### Upgrade Analysis Report
+- Comprehensive comparison of current project vs latest Titan
+- List of applicable improvements with risk/impact assessment
+- Detailed upgrade plan with prioritization and sequencing
+
+### Implementation Results
+- Successfully upgraded project with latest applicable Titan improvements
+- Comprehensive test results showing maintained functionality
+- Performance comparison and any optimizations gained
+
+### Documentation Package
+- Upgrade summary with all changes made
+- New pattern documentation for adopted improvements
+- Troubleshooting guide for any issues encountered
+- Recommendations for future upgrade cycles
+
+## Technical Implementation
+
+### Comparison Methodology
+- **File-by-file comparison** between current project and latest Titan
+- **Dependency analysis** for package.json and Bun configuration changes
+- **Pattern extraction** for reusable improvements vs project-specific customizations
+- **Impact assessment** for each potential upgrade
+
+### Automation Tools
+- **TaskMaster MCP**: Systematic task management and progress tracking
+- **Cursor AI**: Intelligent code analysis and selective upgrade application
+- **Git branching**: Safe upgrade environment with easy rollback
+- **vibe-tools**: Intelligent comparison and pattern recognition
+
+### Quality Assurance
+- **Automated testing**: Run existing test suites with Bun to verify functionality
+- **Manual verification**: Test critical user flows and business logic
+- **Performance monitoring**: Benchmark before/after upgrade performance with Bun
+- **Security review**: Ensure security posture maintained or improved
+
+This systematic upgrade process ensures that [PROJECT_NAME] can safely benefit from the latest Titan improvements while preserving existing functionality and customizations that make the project unique. 
