@@ -17,6 +17,7 @@ if (config.auth.enabled) {
 
 const isProtectedRoute = config.auth.enabled ? createRouteMatcher(['/dashboard(.*)']) : () => false;
 const isOnboardingRoute = config.auth.enabled ? createRouteMatcher(['/onboarding(.*)']) : () => false;
+
 const isTrialExpiredRoute = config.auth.enabled ? createRouteMatcher(['/trial-expired']) : () => false;
 const isApiRoute = (req: any) => req.nextUrl.pathname.startsWith('/api');
 
@@ -106,16 +107,46 @@ export default function middleware(req: any) {
           // by calling the /api/user/check-onboarding endpoint
         }
         
-        // If user is authenticated, they can access onboarding and trial-expired directly
-        if (path.startsWith('/onboarding') || path.startsWith('/trial-expired')) {
+        // Allow access to trial expired page for authenticated users
+        if (path.startsWith('/trial-expired')) {
           return NextResponse.next(); // CSP will be applied by next.config.js
         }
         
-        // If user is going to home page and is authenticated, redirect them to dashboard
+        // If user is authenticated, they can access onboarding directly
+        if (path.startsWith('/onboarding')) {
+          return NextResponse.next(); // CSP will be applied by next.config.js
+        }
+        
+        // If user is going to home page and is authenticated, check trial status
         if (path === '/') {
-          // Preserve existing headers when redirecting
-          // CSP will be applied by next.config.js
-          return NextResponse.redirect(new URL('/dashboard', req.url));
+          // Check if user's trial has expired
+          try {
+            const trialExpired = await isTrialExpiredForUser(userId);
+            if (trialExpired) {
+              // Allow expired trial users to access homepage - don't redirect to dashboard
+              console.log('🏠 HOMEPAGE: Allowing expired trial user to access homepage', { userId });
+              return NextResponse.next(); // CSP will be applied by next.config.js
+            }
+          } catch (error) {
+            console.error('Error checking trial status for homepage access:', error);
+            // On error, allow access (fail open)
+            return NextResponse.next();
+          }
+          
+          // For non-expired users, check referer to avoid redirect loops
+          const referer = req.headers.get('referer');
+          const isFromAccessRestricted = referer && referer.includes('/access-restricted');
+          
+          // Allow users coming from access-restricted to stay on homepage
+          if (isFromAccessRestricted) {
+            console.log('🏠 HOMEPAGE: User coming from access-restricted, allowing homepage access', { userId });
+            return NextResponse.next();
+          }
+          
+          // For other cases, let the client-side handle authorization checks
+          // This avoids middleware complexity and lets dashboard layout handle authorization
+          console.log('🏠 HOMEPAGE: Allowing homepage access, client will handle auth checks', { userId });
+          return NextResponse.next();
         }
       }
       

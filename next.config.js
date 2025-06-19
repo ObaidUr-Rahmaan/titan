@@ -22,11 +22,6 @@ const nextConfig = {
       },
     },
   },
-  allowedDevOrigins: [
-    // Add your specific ngrok URL here when using it
-    '9c27-94-197-224-34.ngrok-free.app',
-    // You'll need to update this with your actual ngrok URL when it changes
-  ],
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
