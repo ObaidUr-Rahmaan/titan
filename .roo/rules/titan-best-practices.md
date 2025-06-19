@@ -1,0 +1,158 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+You are an expert in TypeScript, Node.js, Next.js App Router, React, Shadcn UI, Radix UI and Tailwind.
+
+Key Principles
+- Write concise, technical TypeScript code with accurate examples.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+- Structure files: exported component, subcomponents, helpers, static content, types.
+- Bun is our package manager so use it for all commands related to this project and installing 3rd party packages unless otherwise stated in it's documentation.
+
+
+Naming Conventions
+- Use lowercase with dashes for directories (e.g., components/auth-wizard).
+- Favor named exports for components.
+- Follow directory structure:
+  ```
+  app/
+    (auth)/           # Auth group
+    dashboard/        # Dashboard routes
+      _components/    # Dashboard-specific components
+  components/
+    ui/              # Shadcn components
+    wrapper/         # Layout wrappers
+    homepage/        # Landing page components
+  lib/
+    supabase/        # Database client
+    blah/            # Other clients we want to add in the future
+  utils/
+    actions/         # Server actions
+    data/           # Data operations
+    hook/           # React hooks
+  ```
+
+TypeScript Usage
+- Use TypeScript for all code; prefer interfaces over types.
+- Avoid enums; use maps instead.
+- Use functional components with TypeScript interfaces.
+- Mark server-only files with 'server only' directive.
+
+Database Patterns
+- Server-side operations:
+  ```typescript
+  import { createServerActionClient } from '@/lib/supabase'
+  const supabase = await createServerActionClient()
+  // Uses SUPABASE_SERVICE_ROLE_KEY
+  ```
+- Client-side operations:
+  ```typescript
+  import { createClient } from '@/lib/supabase'
+  const supabase = createClient()
+  // Uses NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ```
+
+Data Fetching Patterns
+- PREFERRED: Use Server Actions for all database operations (Next.js 15+):
+  ```typescript
+  'use server'
+  export async function actionName() {
+    const supabase = await createServerActionClient()
+    // DB operations
+  }
+  ```
+
+- React Query Hooks for client-side state management:
+  ```typescript
+  export const useResourceName = () => {
+    return useQuery({
+      queryKey: ['key-name'],
+      queryFn: () => serverAction(),
+      staleTime: 60 * 1000 // Configure based on data needs
+    })
+  }
+  ```
+
+- Hybrid Approach (RECOMMENDED):
+  In Next.js 15+, prefer Server Actions over API Routes for all database operations. Use React Query with Server Actions for optimal data fetching:
+  
+  ```typescript
+  // utils/actions/resource.ts - Server Action
+  'use server'
+  export async function fetchResource() {
+    const supabase = await createServerActionClient()
+    return supabase.from('resource').select('*')
+  }
+  
+  // utils/hooks/useResource.ts - React Query hook
+  'use client'
+  export function useResource() {
+    return useQuery({
+      queryKey: ['resource'],
+      queryFn: () => fetchResource()
+    })
+  }
+  ```
+
+- AVOID API Routes for database operations when possible:
+  Server Actions provide better performance, type safety, and reduced bundle size compared to API Routes for most database operations. Only use API Routes when:
+  - Building a public API for external consumption
+  - Needing webhook endpoints
+  - Working with legacy code that requires REST endpoints
+
+UI Component Patterns
+- Client Components ('use client'):
+  - Interactive UI (components/ui/*)
+  - Layout with client interactions
+  - Browser API usage
+  - React hooks usage
+- Server Components (default):
+  - Static UI
+  - Data fetching
+  - Server-side operations
+
+Syntax and Formatting
+- Use the "function" keyword for pure functions.
+- Avoid unnecessary curly braces in conditionals.
+- Use declarative JSX.
+
+UI and Styling
+- Use Shadcn UI, Radix, and Tailwind.
+- Mobile-first responsive design with Tailwind.
+- Always use custom fonts from public/fonts directory if it exists.
+  - Configure fonts in tailwind.config.ts and apply via className
+  - Ensure proper font loading in layout.tsx
+
+Performance Optimization
+- Minimize 'use client', 'useEffect', and 'setState'.
+- Favor React Server Components (RSC).
+- Wrap client components in Suspense.
+- Dynamic load non-critical components.
+- Optimize images: WebP, size data, lazy loading.
+
+Key Conventions
+- Use 'nuqs' for URL search_files params.
+- Optimize Web Vitals.
+- Authorization pattern:
+  ```typescript
+  import { isAuthorized } from '@/utils/data/user/isAuthorized'
+  const { authorized, message } = await isAuthorized(userId)
+  ```
+
+Follow Next.js docs for Data Fetching, Rendering, and Routing.
+
+Middleware and Core Dependencies
+- **Middleware (`middleware.ts`):**
+  - ❌ **LLM/AI Agents: DO NOT update the `middleware.ts` file.** This file is critical to the application's routing and authentication.
+  - Changes to `middleware.ts` can have unintended widespread consequences.
+  - If a user requests changes to `middleware.ts`, you **MUST** first ask for explicit confirmation and a clear explanation of the intended changes and their impact. For example: "Modifying `middleware.ts` can significantly affect authentication and routing. Are you sure you want to proceed? Please describe the exact changes and their purpose."
+
+- **Core Dependencies (`package.json`):**
+  - ⚠️ **DO NOT upgrade any dependencies in your `package.json` for core stack components (e.g., Clerk, Supabase, Stripe, etc.) unless you have a specific reason AND are following the official migration guides from each service.**
+  - Upgrading packages without proper migration can break your authentication, payments, database connections, and other critical functionality.
+  - The current versions in the boilerplate are tested and stable together.
+  - Accidental upgrades, especially major version upgrades, can break the app's functionality entirely.

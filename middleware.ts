@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import config from './config';
 import { createServerActionClient } from '@/lib/supabase';
+import { isTrialExpiredForUser } from '@/utils/middleware/trial-check';
 
 let clerkMiddleware: (arg0: (auth: any, req: any) => any) => { (arg0: any): any; new (): any },
   createRouteMatcher;
@@ -15,7 +16,8 @@ if (config.auth.enabled) {
 }
 
 const isProtectedRoute = config.auth.enabled ? createRouteMatcher(['/dashboard(.*)']) : () => false;
-const isOnboardingRoute = config.auth.enabled ? createRouteMatcher(['/onboarding']) : () => false;
+const isOnboardingRoute = config.auth.enabled ? createRouteMatcher(['/onboarding(.*)']) : () => false;
+const isTrialExpiredRoute = config.auth.enabled ? createRouteMatcher(['/trial-expired']) : () => false;
 const isApiRoute = (req: any) => req.nextUrl.pathname.startsWith('/api');
 
 // List of allowed origins for CORS - Add your frontend URL and other trusted domains
@@ -66,26 +68,36 @@ export default function middleware(req: any) {
   // Handle non-API routes with clerk middleware if enabled
   if (config.auth.enabled) {
     return clerkMiddleware(async (auth, req) => {
-      const userId = auth().userId;
+      const { userId } = await auth();
       const path = req.nextUrl.pathname;
       
       // If user is not authenticated and tries to access protected routes
-      if (!userId && (isProtectedRoute(req) || isOnboardingRoute(req))) {
+      if (!userId && (isProtectedRoute(req) || isOnboardingRoute(req) || isTrialExpiredRoute(req))) {
         // Redirect to sign-in, CSP will be applied by next.config.js
-        return auth().redirectToSignIn({ returnBackUrl: req.url });
+        return NextResponse.redirect(new URL('/sign-in', req.url));
       }
       
       // User is authenticated
       if (userId) {
-        // Check if user is trying to access the sign-in or sign-up pages
+        // Allow Clerk to handle redirects for sign-in/sign-up pages
         if (path.startsWith('/sign-in') || path.startsWith('/sign-up')) {
-          // We'll use a redirect to dashboard first, then let dashboard layout handle onboarding check
-          // CSP will be applied by next.config.js
-          return NextResponse.redirect(new URL('/dashboard', req.url));
+          return NextResponse.next(); // Let Clerk handle the redirect
         }
         
-        // For dashboard access, we need to check if user has completed onboarding
+        // For dashboard access, check trial status and onboarding
         if (path.startsWith('/dashboard')) {
+          // Check if user's trial has expired
+          try {
+            const trialExpired = await isTrialExpiredForUser(userId);
+            if (trialExpired) {
+              console.log('🚫 TRIAL EXPIRED: Redirecting user to trial expired page', { userId, path });
+              return NextResponse.redirect(new URL('/trial-expired', req.url));
+            }
+          } catch (error) {
+            console.error('Error checking trial status in middleware:', error);
+            // On error, allow access (fail open)
+          }
+          
           // We'll rely on a client-side check in the Dashboard component
           // The Dashboard component should check if the user has completed onboarding
           // and redirect to /onboarding if needed
@@ -94,8 +106,8 @@ export default function middleware(req: any) {
           // by calling the /api/user/check-onboarding endpoint
         }
         
-        // If user is authenticated, they can access onboarding directly
-        if (path.startsWith('/onboarding')) {
+        // If user is authenticated, they can access onboarding and trial-expired directly
+        if (path.startsWith('/onboarding') || path.startsWith('/trial-expired')) {
           return NextResponse.next(); // CSP will be applied by next.config.js
         }
         

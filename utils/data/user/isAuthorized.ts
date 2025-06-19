@@ -20,7 +20,8 @@ export const isAuthorized = async (
     };
   }
 
-  const result = await clerkClient.users.getUser(userId);
+  const client = await clerkClient();
+  const result = await client.users.getUser(userId);
 
   if (!result) {
     return {

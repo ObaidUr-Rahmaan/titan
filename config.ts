@@ -1,6 +1,9 @@
 const config = {
   auth: {
-    enabled: false,
+    enabled: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? true : false,
+    trialCheckEnabled: true,
+    redirectAfterSignIn: '/dashboard',
+    redirectAfterSignUp: '/onboarding',
   },
   payments: {
     enabled: false,

@@ -1,11 +1,133 @@
 import { createServerClient } from '@/lib/drizzle';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { upgradeUserFromTrialToPaid, expireUserSubscription } from '@/utils/data/user/subscription-status';
+import { createDirectClient } from '@/lib/drizzle';
+import { subscriptionChanges } from '@/db/schema';
+import { eq, and, or } from 'drizzle-orm';
+import { 
+  logSubscriptionCreated, 
+  logSubscriptionDowngraded, 
+  logSubscriptionCancelled,
+  logPaymentSucceeded, 
+  logPaymentFailed,
+  logTrialToPaidUpgrade 
+} from '@/utils/billing-activity-logger';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : undefined;
+
+/**
+ * Mark subscription changes as completed when webhook confirms the change
+ */
+async function markSubscriptionChangeCompleted(
+  subscriptionId: string,
+  newTier: string,
+  userId?: string
+): Promise<void> {
+  try {
+    const db = createDirectClient()
+    const { users } = await import('@/db/schema')
+
+    // Get the scheduled change info before updating (for email purposes)
+    const [scheduledChange] = await db
+      .select({
+        id: subscriptionChanges.id,
+        fromTier: subscriptionChanges.fromTier,
+        toTier: subscriptionChanges.toTier,
+        changeType: subscriptionChanges.changeType,
+        userId: subscriptionChanges.userId,
+      })
+      .from(subscriptionChanges)
+      .where(
+        and(
+          eq(subscriptionChanges.stripeSubscriptionId, subscriptionId),
+          eq(subscriptionChanges.toTier, newTier),
+          eq(subscriptionChanges.changeStatus, 'scheduled')
+        )
+      )
+      .limit(1)
+
+    // Mark any pending/scheduled changes as completed
+    await db
+      .update(subscriptionChanges)
+      .set({
+        changeStatus: 'completed',
+        processedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(subscriptionChanges.stripeSubscriptionId, subscriptionId),
+          eq(subscriptionChanges.toTier, newTier),
+          // Only update pending or scheduled changes
+          eq(subscriptionChanges.changeStatus, 'scheduled')
+        )
+      )
+
+    // If we have a userId, also update their subscription tier and clear pending changes
+    if (userId) {
+      await db
+        .update(users)
+        .set({
+          subscriptionTier: newTier,
+          pendingSubscriptionChange: null,
+          lastPlanChangeDate: new Date(),
+        })
+        .where(eq(users.userId, userId))
+      
+      console.log(`[STRIPE WEBHOOK] User ${userId} subscription tier updated to ${newTier} (scheduled change completed)`)
+      
+      // Log downgrade completion activity
+      if (scheduledChange && scheduledChange.changeType === 'downgrade') {
+        await logSubscriptionDowngraded(
+          userId,
+          scheduledChange.fromTier || 'unknown',
+          newTier,
+          subscriptionId,
+          'webhook'
+        );
+      }
+    }
+
+    console.log(`[STRIPE WEBHOOK] Subscription change marked as completed for ${subscriptionId} -> ${newTier}`)
+  } catch (error) {
+    console.error(`[STRIPE WEBHOOK] Error marking subscription change as completed:`, error)
+  }
+}
+
+/**
+ * Mark subscription changes as failed when webhook processing fails
+ */
+async function markSubscriptionChangeFailed(
+  subscriptionId: string,
+  errorMessage: string
+): Promise<void> {
+  try {
+    const db = createDirectClient()
+    const { subscriptionChanges } = await import('@/db/schema')
+    const { eq } = await import('drizzle-orm')
+
+    // Mark any pending changes for this subscription as failed
+    await db
+      .update(subscriptionChanges)
+      .set({
+        changeStatus: 'failed',
+        updatedAt: new Date(),
+        metadata: JSON.stringify({
+          error: errorMessage,
+          failedAt: new Date().toISOString()
+        })
+      })
+      .where(eq(subscriptionChanges.stripeSubscriptionId, subscriptionId));
+    
+    console.log(`[STRIPE WEBHOOK] Marked subscription changes as failed for subscription: ${subscriptionId}`);
+  } catch (error) {
+    console.error(`[STRIPE WEBHOOK] Error marking subscription change as failed:`, error);
+  }
+}
 
 export async function POST(req: NextRequest) {
   console.log(`[STRIPE WEBHOOK] Received webhook request at ${new Date().toISOString()}`);
@@ -120,6 +242,33 @@ async function handleSubscriptionEvent(
     });
   }
 
+  // Log billing activity based on subscription type and status
+  try {
+    const userId = subscription.metadata?.userId || customerEmail;
+    const planName = subscription.items.data[0]?.price.nickname || 'Unknown Plan';
+    
+    if (type === 'created') {
+      await logSubscriptionCreated(userId, planName, subscription.id, 'webhook');
+      
+      // Check if this is a trial to paid upgrade
+      if (subscription.status === 'active' && subscription.trial_end) {
+        await logTrialToPaidUpgrade(userId, planName, subscription.id, 'webhook');
+        await upgradeUserFromTrialToPaid(userId, planName, subscription.id);
+      }
+    } else if (type === 'deleted') {
+      await logSubscriptionCancelled(userId, planName, subscription.id, undefined, 'webhook');
+    } else if (type === 'updated') {
+      // Handle subscription updates (upgrades/downgrades)
+      if (subscription.status === 'active') {
+        // This could be an upgrade or downgrade - would need previous state to determine
+        console.log(`[STRIPE WEBHOOK] Subscription updated for user ${userId} to plan ${planName}`);
+      }
+    }
+  } catch (activityError) {
+    console.error(`[STRIPE WEBHOOK] Error logging billing activity:`, activityError);
+    // Don't fail the webhook for logging errors
+  }
+
   console.log(`[STRIPE WEBHOOK] Subscription ${type} processed successfully for ID: ${subscription.id}`);
   return NextResponse.json({
     status: 200,
@@ -174,6 +323,22 @@ async function handleInvoiceEvent(
       status: 500,
       error: `Error inserting invoice (payment ${status})`,
     });
+  }
+
+  // Log billing activity for payment events
+  try {
+    const userId = invoice.metadata?.userId || customerEmail;
+    const amount = status === 'succeeded' ? invoice.amount_paid : invoice.amount_due || 0;
+    const currency = invoice.currency;
+    
+    if (status === 'succeeded') {
+      await logPaymentSucceeded(userId, amount, currency, invoice.id, invoice.subscription as string);
+    } else if (status === 'failed') {
+      await logPaymentFailed(userId, amount, currency, invoice.id, 'Payment failed', invoice.subscription as string);
+    }
+  } catch (activityError) {
+    console.error(`[STRIPE WEBHOOK] Error logging payment activity:`, activityError);
+    // Don't fail the webhook for logging errors
   }
 
   console.log(`[STRIPE WEBHOOK] Invoice payment ${status} recorded successfully for ID: ${invoice.id}`);

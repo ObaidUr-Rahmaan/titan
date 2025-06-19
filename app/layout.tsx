@@ -2,6 +2,9 @@ import Provider from '@/app/provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import AuthWrapper from '@/components/wrapper/auth-wrapper';
+import { ErrorBoundary } from '@/components/wrapper/error-boundary';
+import { WebVitals } from '@/components/web-vitals';
+import { ReactScan } from '@/components/react-scan';
 import { Analytics } from '@vercel/analytics/react';
 import type { Metadata } from 'next';
 import './globals.css';
@@ -71,17 +74,21 @@ export default function RootLayout({
         {/* REPLACE ME ---- Insert </script> tag for DataFast to analyse User traffic */}
 
         <body className="font-sora">
-          <Provider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-              <Toaster />
-            </ThemeProvider>
-          </Provider>
+          <ErrorBoundary>
+            <Provider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                {children}
+                <Toaster />
+              </ThemeProvider>
+            </Provider>
+          </ErrorBoundary>
+          <WebVitals />
+          <ReactScan />
           <Analytics />
         </body>
       </html>

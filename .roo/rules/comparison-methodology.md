@@ -1,0 +1,224 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Comparison Methodology for Titan Upgrades
+
+Systematic approach for analyzing differences between evolved projects and current Titan.
+
+## **Pre-Analysis Setup**
+
+### **Project Structure Verification**
+```bash
+# Verify evolved project structure
+ls -la ./evolved-projects/my-saas-app/
+# Should contain: app/, components/, lib/, utils/, etc.
+
+# Verify it was built from Titan
+cat ./evolved-projects/my-saas-app/package.json | grep "create-titan"
+# Look for evidence it was generated from Titan CLI
+
+# Verify it uses Bun
+cat ./evolved-projects/my-saas-app/package.json | grep "packageManager.*bun"
+# Should see Bun as package manager
+```
+
+### **Baseline Documentation**
+Before starting analysis, document:
+- **Titan Version**: Which version was used to generate the project
+- **Time Elapsed**: How long the project has been in development  
+- **Project Scale**: Lines of code, features added, complexity
+- **Known Major Changes**: Any significant architecture decisions made
+
+## **Systematic Comparison Process**
+
+### **1. High-Level Structural Analysis**
+```bash
+# Compare directory structures
+diff -rq . ./evolved-projects/my-saas-app/ --exclude=node_modules --exclude=.git
+
+# Compare package.json dependencies
+diff package.json ./evolved-projects/my-saas-app/package.json
+
+# Compare configuration files
+diff next.config.js ./evolved-projects/my-saas-app/next.config.js
+diff tailwind.config.js ./evolved-projects/my-saas-app/tailwind.config.js
+diff tsconfig.json ./evolved-projects/my-saas-app/tsconfig.json
+```
+
+### **2. File-by-File Domain Analysis**
+For each domain from [analysis-domains.md](mdc:.roo/rules/analysis-domains.md):
+
+#### **Authentication Domain Example**
+```bash
+# Compare middleware
+diff middleware.ts ./evolved-projects/my-saas-app/middleware.ts
+
+# Compare auth components
+diff -r app/\(auth\)/ ./evolved-projects/my-saas-app/app/\(auth\)/
+
+# Compare auth utilities
+diff -r utils/actions/user/ ./evolved-projects/my-saas-app/utils/actions/user/
+```
+
+#### **Payment Domain Example**  
+```bash
+# Compare payment API routes
+diff -r app/api/payments/ ./evolved-projects/my-saas-app/app/api/payments/
+
+# Compare payment utilities
+diff -r utils/actions/payments/ ./evolved-projects/my-saas-app/utils/actions/payments/
+
+# Compare Stripe configurations
+diff lib/stripe.ts ./evolved-projects/my-saas-app/lib/stripe.ts
+```
+
+### **3. New File Discovery**
+```bash
+# Find files that exist in evolved project but not in Titan
+find ./evolved-projects/my-saas-app/ -type f -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | while read file; do
+  titan_file=${file#./evolved-projects/my-saas-app/}
+  if [ ! -f "$titan_file" ]; then
+    echo "NEW FILE: $file"
+  fi
+done
+```
+
+## **Analysis Documentation Template**
+
+For each domain analysis, document findings using this template:
+
+### **Domain: [Authentication/Payments/Database/etc.]**
+
+#### **Files Compared**
+- `middleware.ts` - [Status: Modified/New/Same]
+- `app/(auth)/sign-in/page.tsx` - [Status: Modified/New/Same]
+- `utils/actions/user/auth.ts` - [Status: Modified/New/Same]
+
+#### **Key Differences Found**
+1. **Improvement Name**: [Brief description]
+   - **File**: `path/to/file.ts`
+   - **Lines**: [Line numbers if specific]
+   - **Change Type**: [Addition/Modification/Enhancement]
+   - **Code Example**:
+   ```typescript
+   // Original Titan code
+   export function originalFunction() {
+     // basic implementation
+   }
+   
+   // Evolved project improvement
+   export function improvedFunction(options?: EnhancementOptions) {
+     // enhanced implementation with new features
+   }
+   ```
+
+#### **Migration Assessment**
+- **Complexity**: [Easy/Medium/Hard]
+- **Impact**: [High/Medium/Low]
+- **Breaking Changes**: [Yes/No - describe if yes]
+- **Dependencies**: [Any new packages or changes needed]
+- **Backward Compatibility**: [Maintained/Requires migration]
+
+#### **Recommendation**
+- **Action**: [Adopt/Adapt/Skip/Research Further]
+- **Priority**: [High/Medium/Low]
+- **Notes**: [Additional context or considerations]
+
+## **Code Quality Assessment**
+
+### **Pattern Analysis**
+For each improvement found, evaluate:
+
+#### **Code Quality Indicators**
+- **TypeScript Usage**: Better type definitions, fewer `any` types
+- **Error Handling**: More comprehensive error boundaries and handling
+- **Performance**: Optimizations, lazy loading, caching
+- **Security**: Input validation, sanitization, protection mechanisms
+- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
+- **Testing**: Better test coverage, testing patterns
+
+#### **Architecture Improvements**
+- **Separation of Concerns**: Better file organization, cleaner abstractions
+- **Reusability**: More generic, reusable components and utilities
+- **Maintainability**: Clearer naming, better documentation, simpler logic
+- **Scalability**: Patterns that support growth and feature additions
+
+### **Business Logic Evaluation**
+- **User Experience**: Improvements that enhance UX
+- **Performance**: Changes that improve load times, responsiveness
+- **Reliability**: Error handling, fallbacks, graceful degradation
+- **Security**: Authentication, authorization, data protection enhancements
+
+## **Automated Analysis Tools**
+
+### **Using Roo Code/AI for Analysis**
+```bash
+# Use vibe-tools for intelligent comparison
+vibe-tools repo "Compare the authentication system in ./evolved-projects/my-saas-app with the current Titan auth system. Identify specific improvements and patterns."
+
+vibe-tools repo "Analyze the payment handling in ./evolved-projects/my-saas-app and suggest what could be extracted to improve Titan's payment system."
+```
+
+### **Using TaskMaster for Documentation**
+```bash
+# Log findings systematically
+task-master update-subtask --id="1.1" --prompt="
+Authentication Analysis Results:
+- Found improved middleware pattern in middleware.ts lines 45-67
+- Enhanced error handling in sign-in component
+- New MFA implementation in utils/auth/mfa.ts
+- Better session management with refresh tokens
+"
+```
+
+### **Git-based Analysis**
+```bash
+# If evolved project is git-tracked, analyze commit history
+cd ./evolved-projects/my-saas-app/
+git log --oneline --since="3 months ago" --grep="auth\|payment\|database"
+
+# Look for patterns in commit messages that indicate improvements
+git log --oneline --grep="fix\|improve\|enhance\|optimize"
+```
+
+## **Validation Process**
+
+### **Before Documenting Improvements**
+1. **Verify the improvement actually works** in the evolved project
+2. **Understand the context** - why was this change made?
+3. **Check for completeness** - are there related changes in other files?
+4. **Assess the impact** - what problem does this solve?
+
+### **Cross-Reference Analysis**
+- **Check multiple domains** - improvements often span multiple areas
+- **Look for patterns** - similar improvements across different components
+- **Identify dependencies** - changes that require other changes
+- **Consider user feedback** - if available, what drove these improvements?
+
+### **Quality Gates**
+- **Every improvement must have a clear use case**
+- **Code examples must be complete and functional**
+- **Migration path must be defined and safe**
+- **Impact assessment must be realistic**
+
+## **Common Pitfalls to Avoid**
+
+### **Analysis Mistakes**
+- **❌ Focusing only on new files** - modifications to existing files often contain valuable improvements
+- **❌ Ignoring configuration changes** - small config improvements can have big impact
+- **❌ Missing dependency updates** - package.json changes often indicate important upgrades
+- **❌ Overlooking script additions** - new npm scripts often solve real development pain points
+
+### **Documentation Mistakes**
+- **❌ Vague descriptions** - "better auth" is not actionable
+- **❌ Missing context** - why was this improvement needed?
+- **❌ Incomplete code examples** - partial snippets are harder to evaluate
+- **❌ Ignoring edge cases** - what scenarios does this improvement handle?
+
+### **Migration Planning Mistakes**
+- **❌ Underestimating complexity** - thorough analysis prevents implementation surprises
+- **❌ Ignoring backward compatibility** - breaking changes need careful handling
+- **❌ Skipping testing implications** - new patterns may need new testing approaches
+- **❌ Missing documentation updates** - improvements need to be documented for future users
