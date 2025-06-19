@@ -17,7 +17,8 @@
     "db:drop": "tsx db/drop.ts",
     "db:seed": "tsx db/seed.ts",
     "db:init": "tsx db/init.ts",
-    "db:rls": "tsx db/apply-rls.ts"
+    "db:rls": "tsx db/apply-rls.ts",
+    "upgrade-titan": "bun run scripts/upgrade-titan.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.7",
@@ -101,6 +102,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "autoprefixer": "latest",
+    "chalk": "^5.4.1",
     "drizzle-kit": "^0.30.5",
     "postcss": "latest",
     "tailwindcss": "^3.3.5",

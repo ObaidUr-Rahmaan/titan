@@ -3,3 +3,132 @@ description:
 globs:
 alwaysApply: false
 ---
+# Project Upgrade to Latest Titan Workflow
+
+This workflow enables community builders to safely upgrade their existing Titan-based projects with the latest improvements from the main Titan boilerplate.
+
+## **Workflow Trigger**
+When a user says **"Upgrade my project to latest Titan using the PRD"** or similar, initiate this fully automated downstream upgrade workflow.
+
+## **Prerequisites**
+- User is in their existing Titan-based project directory
+- TaskMaster MCP must be available
+- Git repository should be clean (all changes committed)
+- Internet access to clone latest Titan
+
+## **Master Upgrade Process**
+
+### **Step 1: Auto-Generate Project-Specific Upgrade PRD**
+- Automatically analyze current project structure and package.json
+- Extract project context:
+  - Project name (from package.json)
+  - Titan version used (check package.json dependencies/git history)
+  - Project age (git log analysis)
+  - Major customizations (compare file structure vs standard Titan)
+  - Project scale indicators (user feedback, analytics integrations, etc.)
+- Generate customized PRD automatically from template
+- Save to `.taskmaster/docs/prd.txt` without user intervention
+
+### **Step 2: Clone Latest Titan for Comparison**
+- Clone latest Titan: `git clone https://github.com/[repo]/titan ./titan-latest`
+- This provides the reference point for comparison
+- Ensure we have the most current improvements to analyze
+
+### **Step 3: Initialize TaskMaster Upgrade Analysis**
+- Initialize TaskMaster: `task-master init` (if not already done)
+- Parse the upgrade PRD: `task-master parse-prd --input=.taskmaster/docs/prd.txt --research`
+- This generates systematic upgrade analysis tasks for all domains
+
+### **Step 4: Create Safety Branch**
+- Create upgrade branch: `git checkout -b upgrade/titan-latest`
+- This ensures all changes can be easily reverted if needed
+- Provides safe experimentation environment
+
+### **Step 5: Systematic Domain Analysis**
+For each domain from upgrade PRD:
+- Compare current project vs `./titan-latest/` for that domain
+- Identify applicable improvements (see [upgrade-compatibility.mdc](mdc:.cursor/rules/upgrade-compatibility.mdc))
+- Assess risk/impact using [upgrade-safety-patterns.mdc](mdc:.cursor/rules/upgrade-safety-patterns.mdc)
+- Document findings with specific file paths and code examples
+- Use TaskMaster to log detailed analysis in subtask details
+
+### **Step 6: Selective Upgrade Application**
+- Review all findings against compatibility criteria
+- Create implementation tasks for viable improvements
+- Apply changes incrementally, testing after each domain
+- Skip or modify changes that would break existing functionality
+
+### **Step 7: Validation & Testing**
+- Run existing tests after each upgrade domain
+- Verify core functionality still works
+- Check build process and deployment compatibility
+- Performance benchmark vs pre-upgrade state
+
+### **Step 8: Finalization**
+- Create comprehensive upgrade summary
+- Document new patterns and capabilities added
+- Provide merge vs rollback recommendation
+- Clean up temporary files (`./titan-latest/`)
+
+## **Key Principles**
+- **Safety First**: Never break existing functionality
+- **Selective Application**: Only apply relevant and safe improvements
+- **Incremental Progress**: Test after each domain upgrade
+- **Reversible Changes**: Always provide clear rollback path
+- **Documentation**: Log everything for team review
+
+## **Compatibility Rules**
+- **Preserve Custom Code**: Never overwrite project-specific business logic
+- **Respect Customizations**: Maintain existing customizations and patterns
+- **Dependency Safety**: Check for package conflicts before upgrading
+- **API Stability**: Ensure external integrations continue working
+- **Performance**: No degradation in critical user flows
+- **Framework Assessment**: Research Next.js upgrades for breaking changes, benefits, and migration complexity before applying
+
+## **User Command**
+The entire workflow is triggered by a single command:
+
+```
+"Upgrade my project to latest Titan using the PRD"
+```
+
+## **Automated Agent Process**
+The agent automatically handles:
+
+```bash
+# Agent auto-detects project context and generates PRD
+# Agent clones latest Titan: git clone https://github.com/[repo]/titan ./titan-latest
+# Agent initializes TaskMaster: task-master init (if needed)
+# Agent creates customized PRD and parses: task-master parse-prd --input=.taskmaster/docs/prd.txt --research
+# Agent creates safety branch: git checkout -b upgrade/titan-latest
+# Agent expands and executes upgrade tasks systematically
+# Agent tests after each domain: bun run build, bun run test, bun run dev
+# Agent provides final merge/rollback recommendation
+```
+
+## **Manual Commands (If Needed)**
+```bash
+# View upgrade progress
+task-master next
+task-master list --status=pending
+task-master show [task-id]
+
+# Test manually between upgrades
+bun run build
+bun run test
+bun run dev
+
+# Finalize decision
+git checkout main && git merge upgrade/titan-latest # Apply
+git checkout main && git branch -D upgrade/titan-latest # Rollback
+```
+
+## **Risk Management**
+- **High-Risk Changes**: Require manual review and explicit approval
+- **Medium-Risk Changes**: Apply with thorough testing
+- **Low-Risk Changes**: Can be applied automatically
+- **Breaking Changes**: Present options, don't apply automatically
+- **Custom Logic**: Always preserve, never overwrite
+
+## **Expected Outcome**
+A safely upgraded project that incorporates relevant improvements from latest Titan while preserving all existing functionality, customizations, and business logic. The upgrade is documented, tested, and easily reversible if needed.
