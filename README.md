@@ -153,3 +153,7 @@ All upgrades follow strict **compatibility and safety** rules:
 ---
 
 Detailed Docs [here](https://blueprint.codeandcreed.tech/product-development/titan)
+
+### New Features (coming soon)
+
+- Implement teams/orgs based auth
