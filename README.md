@@ -30,6 +30,16 @@ Apply latest Titan improvements to existing projects safely and selectively.
 
 ### Upstream: Analyze Evolved Projects → Improve Titan
 
+**Quick Start via Script**:
+```bash
+# Automated setup via script
+bun scripts/upgrade-titan.ts --project-path ./evolved-projects/my-saas-app
+
+# Or via interactive prompt
+bun run upgrade-titan
+```
+
+**Manual Setup**:
 1. **Clone your evolved project** into the Titan workspace:
    ```bash
    mkdir evolved-projects
@@ -49,6 +59,19 @@ Apply latest Titan improvements to existing projects safely and selectively.
 
 ### Downstream: Upgrade Your Project with Latest Titan
 
+**Quick Start via Script** (Recommended):
+```bash
+# From your Titan-based project directory
+bun scripts/upgrade-project.ts
+
+# Conservative upgrade focusing on security
+bun scripts/upgrade-project.ts --risk-tolerance conservative --domains security,performance
+
+# Dry run to preview changes
+bun scripts/upgrade-project.ts --dry-run
+```
+
+**Manual Setup**:
 1. **Ensure clean repository** (all changes committed):
    ```bash
    git status  # Should be clean
@@ -65,7 +88,11 @@ Apply latest Titan improvements to existing projects safely and selectively.
    "Upgrade my project to latest Titan using the PRD"
    ```
 
-4. **Safe branch-based workflow** - Creates `upgrade/titan-latest` branch for all changes with easy rollback.
+**Safety Features**:
+- 🛡️ Creates `upgrade/titan-latest` branch for all changes
+- 🔄 Easy rollback: `git checkout main && git branch -D upgrade/titan-latest`
+- 📊 Intelligent compatibility assessment
+- ⚠️ Never overwrites custom business logic
 
 ### Analysis Domains
 
