@@ -1,14 +1,10 @@
-const { Config } = require('tailwindcss');
+import type { Config } from 'tailwindcss';
+import svgToDataUri from 'mini-svg-data-uri';
+import colors from 'tailwindcss/colors';
+// @ts-ignore - Tailwind internal utility
+import { default as flattenColorPalette } from 'tailwindcss/lib/util/flattenColorPalette';
 
-const svgToDataUri = require('mini-svg-data-uri');
-
-const colors = require('tailwindcss/colors');
-const { default: flattenColorPalette } = require('tailwindcss/lib/util/flattenColorPalette');
-
-// Adding PluginAPI type for TypeScript
-import type { PluginAPI } from 'tailwindcss/types/config';
-
-const config = {
+const config: Config = {
   // Merging the content arrays and removing duplicates
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -156,9 +152,10 @@ const config = {
   },
   // Merging plugins, adding any unique plugins from both files
   plugins: [
+    // @ts-ignore
     require('tailwindcss-animate'), // Assuming require is resolved in your environment
     // Add other unique plugins here
-    function ({ matchUtilities, theme }: PluginAPI) {
+    function ({ matchUtilities, theme }: any) {
       matchUtilities(
         {
           'bg-grid': (value: string) => ({

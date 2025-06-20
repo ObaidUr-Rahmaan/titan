@@ -12,8 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import config from '@/config';
-import { SignOutButton, useUser } from '@clerk/nextjs';
-import { CreditCard, LogOut, Settings, User } from 'lucide-react';
+import { SignOutButton, useUser, useOrganization } from '@clerk/nextjs';
+import { CreditCard, LogOut, Settings, User, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ export function UserProfile() {
   const pathname = usePathname();
   const isDashboardPage = pathname?.startsWith('/dashboard');
   const { user } = useUser();
+  const { organization } = useOrganization();
   
   return (
     <div className="flex items-center gap-2">
@@ -46,7 +47,14 @@ export function UserProfile() {
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel>
+            My Account
+            {organization && (
+              <div className="text-xs text-muted-foreground font-normal mt-1">
+                {organization.name}
+              </div>
+            )}
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <Link href="/user-profile">
@@ -63,6 +71,15 @@ export function UserProfile() {
                 <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
               </DropdownMenuItem>
             </Link>
+            {organization && (
+              <Link href="/dashboard/organization">
+                <DropdownMenuItem>
+                  <Building2 className="mr-2 h-4 w-4" />
+                  <span>Organization</span>
+                  <DropdownMenuShortcut>⌘O</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </Link>
+            )}
           </DropdownMenuGroup>
           <SignOutButton>
             <DropdownMenuItem>

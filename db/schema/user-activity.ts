@@ -16,6 +16,9 @@ export const userActivity = pgTable(
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    
+    // Organization context - nullable for backward compatibility
+    organizationId: text('organization_id') // Clerk organization ID for context filtering
   },
   (table) => ({
     userIdIdx: index('user_activity_user_id_idx').on(table.userId),
@@ -24,6 +27,7 @@ export const userActivity = pgTable(
     createdAtIdx: index('user_activity_created_at_idx').on(table.createdAt),
     sourceIdx: index('user_activity_source_idx').on(table.source),
     relatedEntityIdx: index('user_activity_related_entity_idx').on(table.relatedEntityType, table.relatedEntityId),
+    organizationIdIdx: index('user_activity_organization_id_idx').on(table.organizationId)
   })
 )
 

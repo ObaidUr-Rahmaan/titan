@@ -1,4 +1,5 @@
 import { pgTable, serial, timestamp, varchar, text, boolean } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
 
 export const users = pgTable('user', {
@@ -10,6 +11,7 @@ export const users = pgTable('user', {
   gender: text('gender'),
   profileImageUrl: text('profile_image_url'),
   userId: varchar('user_id').unique().notNull().$defaultFn(() => createId()),
+  clerkUserId: varchar('clerk_user_id').unique(),
   subscription: text('subscription'),
   // Profile fields
   company: varchar('company', { length: 100 }),
@@ -31,4 +33,16 @@ export const users = pgTable('user', {
   paidWelcomeEmailSent: boolean('paid_welcome_email_sent').default(false),
   cancellationEmailSent: boolean('cancellation_email_sent').default(false),
   expiredEmailSent: boolean('expired_email_sent').default(false)
-}); 
+});
+
+// Define relationships
+export const usersRelations = relations(users, ({ many }) => ({
+  // One user can have many organization memberships
+  organizationMemberships: many(organizationMemberships),
+  // One user can have many individual subscriptions
+  subscriptions: many(subscriptions)
+}));
+
+// Import these after the table definition to avoid circular dependencies
+import { organizationMemberships } from './organization-memberships';
+import { subscriptions } from './subscriptions'; 

@@ -6,10 +6,10 @@ const config = {
     redirectAfterSignUp: '/onboarding',
   },
   payments: {
-    enabled: false,
+    enabled: true,
   },
   email: {
-    enabled: false,
+    enabled: true,
   },
 };
 

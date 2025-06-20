@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp, decimal, text, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, decimal, text, pgEnum, integer } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 // Enum for change types
@@ -22,4 +22,7 @@ export const subscriptionChanges = pgTable('subscription_changes', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   processedAt: timestamp('processed_at'), // When the change was actually applied
+  
+  // Organization support - nullable for backward compatibility
+  organizationId: integer('organization_id') // References organizations.id
 }); 

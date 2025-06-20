@@ -2,6 +2,7 @@
 
 import { UserProfile } from '@/components/user-profile';
 import config from '@/config';
+import { OrganizationSwitcherEnhanced } from '@/components/organizations';
 import Link from 'next/link';
 import { ReactNode } from 'react';
 
@@ -14,7 +15,13 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
             Titan
           </Link>
         </div>
-        <div className="flex justify-center items-center">
+        
+        {/* Organization Switcher */}
+        <div className="flex items-center gap-4">
+          {config?.auth?.enabled && (
+            <OrganizationSwitcherEnhanced />
+          )}
+          
           <UserProfile />
         </div>
       </header>

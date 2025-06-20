@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { upgradeUserFromTrialToPaid, expireUserSubscription } from '@/utils/data/user/subscription-status';
 import { createDirectClient } from '@/lib/drizzle';
-import { subscriptionChanges } from '@/db/schema';
+import { subscriptionChanges, subscriptions, organizations, users } from '@/db/schema';
 import { eq, and, or } from 'drizzle-orm';
 import { 
   logSubscriptionCreated, 
@@ -14,6 +14,14 @@ import {
   logPaymentFailed,
   logTrialToPaidUpgrade 
 } from '@/utils/billing-activity-logger';
+import { 
+  createSubscription, 
+  updateSubscription, 
+  cancelSubscription,
+  type SubscriptionContext,
+  type CreateSubscriptionParams,
+  type UpdateSubscriptionParams
+} from '@/utils/subscription-management';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -176,6 +184,20 @@ async function handleSubscriptionEvent(
   const subscription = event.data.object as Stripe.Subscription;
   console.log(`[STRIPE WEBHOOK] Subscription ID: ${subscription.id}, Status: ${subscription.status}`);
   
+  // Determine subscription context (individual or organization)
+  const context: SubscriptionContext = subscription.metadata?.organizationId ? 'organization' : 'individual';
+  const contextId = subscription.metadata?.organizationId || subscription.metadata?.userId;
+  
+  console.log(`[STRIPE WEBHOOK] Subscription context: ${context}, Context ID: ${contextId}`);
+  
+  if (!contextId) {
+    console.error(`[STRIPE WEBHOOK] Missing context ID in subscription metadata for ${subscription.id}`);
+    return NextResponse.json({
+      status: 400,
+      error: 'Missing context ID in subscription metadata',
+    });
+  }
+
   const customerEmail = await getCustomerEmail(subscription.customer as string, stripe);
 
   if (!customerEmail) {
@@ -186,59 +208,90 @@ async function handleSubscriptionEvent(
     });
   }
 
-  const subscriptionData: any = {
-    subscription_id: subscription.id,
-    stripe_user_id: subscription.customer,
-    status: subscription.status,
-    start_date: new Date(subscription.created * 1000).toISOString(),
-    plan_id: subscription.items.data[0]?.price.id,
-    user_id: subscription.metadata?.userId || '',
-    email: customerEmail,
-  };
+  console.log(`[STRIPE WEBHOOK] Processing ${context} subscription with ID: ${subscription.id}`);
 
-  console.log(`[STRIPE WEBHOOK] Processing subscription with data:`, subscriptionData);
-
-  let data, error;
-  if (type === 'deleted') {
-    console.log(`[STRIPE WEBHOOK] Updating subscription to cancelled: ${subscription.id}`);
-    ({ data, error } = await supabase
-      .from('subscriptions')
-      .update({ status: 'cancelled', email: customerEmail })
-      .match({ subscription_id: subscription.id })
-      .select());
-    
-    if (!error) {
-      console.log(`[STRIPE WEBHOOK] Updating user subscription to null for email: ${customerEmail}`);
-      const { error: userError } = await supabase
-        .from('user')
-        .update({ subscription: null })
-        .eq('email', customerEmail);
+  try {
+    // Use subscription management service for organization/individual subscriptions
+    if (type === 'deleted') {
+      console.log(`[STRIPE WEBHOOK] Cancelling ${context} subscription: ${subscription.id}`);
       
-      if (userError) {
-        console.error(`[STRIPE WEBHOOK] Error updating user subscription status:`, userError);
-        return NextResponse.json({
-          status: 500,
-          error: 'Error updating user subscription status',
-        });
+      const result = await cancelSubscription(subscription.id, true);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to cancel subscription');
       }
-      console.log(`[STRIPE WEBHOOK] User subscription status updated to null for email: ${customerEmail}`);
+      
+      console.log(`[STRIPE WEBHOOK] Successfully cancelled ${context} subscription for ${contextId}`);
+      
+    } else if (type === 'created') {
+      console.log(`[STRIPE WEBHOOK] Creating ${context} subscription: ${subscription.id}`);
+      
+      const priceId = subscription.items.data[0]?.price.id;
+      const planId = subscription.metadata?.planId || priceId;
+      
+      const createParams: CreateSubscriptionParams = {
+        context,
+        subscriptionId: subscription.id,
+        stripeCustomerId: subscription.customer as string,
+        planId,
+        status: subscription.status,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        quantity: subscription.items.data[0]?.quantity || 1,
+        email: customerEmail,
+      };
+      
+      // Add context-specific parameters
+      if (context === 'organization') {
+        createParams.organizationId = parseInt(contextId);
+        createParams.seatLimit = subscription.metadata?.seatLimit ? parseInt(subscription.metadata.seatLimit) : 10;
+      } else {
+        createParams.clerkUserId = contextId;
+      }
+      
+      const result = await createSubscription(createParams);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create subscription');
+      }
+      
+      console.log(`[STRIPE WEBHOOK] Successfully created ${context} subscription for ${contextId}`);
+      
+    } else if (type === 'updated') {
+      console.log(`[STRIPE WEBHOOK] Updating ${context} subscription: ${subscription.id}`);
+      
+      const planId = subscription.metadata?.planId || subscription.items.data[0]?.price.id;
+      
+      const updateParams: UpdateSubscriptionParams = {
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        planId,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        quantity: subscription.items.data[0]?.quantity || 1,
+      };
+      
+      // Add organization-specific parameters
+      if (context === 'organization' && subscription.metadata?.seatLimit) {
+        updateParams.seatLimit = parseInt(subscription.metadata.seatLimit);
+      }
+      
+      const result = await updateSubscription(updateParams);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update subscription');
+      }
+      
+      console.log(`[STRIPE WEBHOOK] Successfully updated ${context} subscription for ${contextId}`);
     }
-  } else {
-    console.log(`[STRIPE WEBHOOK] ${type === 'created' ? 'Inserting' : 'Updating'} subscription: ${subscription.id}`);
-    ({ data, error } = await supabase
-      .from('subscriptions')
-      [type === 'created' ? 'insert' : 'update'](
-        type === 'created' ? [subscriptionData] : subscriptionData
-      )
-      .match({ subscription_id: subscription.id })
-      .select());
-  }
 
-  if (error) {
-    console.error(`[STRIPE WEBHOOK] Error during subscription ${type}:`, error);
+  } catch (serviceError) {
+    console.error(`[STRIPE WEBHOOK] Error in subscription management service:`, serviceError);
     return NextResponse.json({
       status: 500,
-      error: `Error during subscription ${type}`,
+      error: `Error processing ${context} subscription ${type}`,
     });
   }
 
@@ -273,7 +326,6 @@ async function handleSubscriptionEvent(
   return NextResponse.json({
     status: 200,
     message: `Subscription ${type} success`,
-    data,
   });
 }
 

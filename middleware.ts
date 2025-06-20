@@ -15,8 +15,9 @@ if (config.auth.enabled) {
   }
 }
 
-const isProtectedRoute = config.auth.enabled ? createRouteMatcher(['/dashboard(.*)']) : () => false;
+const isProtectedRoute = config.auth.enabled ? createRouteMatcher(['/dashboard(.*)', '/org/(.*)']) : () => false;
 const isOnboardingRoute = config.auth.enabled ? createRouteMatcher(['/onboarding(.*)']) : () => false;
+const isOrganizationRoute = config.auth.enabled ? createRouteMatcher(['/org/(.*)']) : () => false;
 
 const isTrialExpiredRoute = config.auth.enabled ? createRouteMatcher(['/trial-expired']) : () => false;
 const isApiRoute = (req: any) => req.nextUrl.pathname.startsWith('/api');
@@ -83,6 +84,34 @@ export default function middleware(req: any) {
         // Allow Clerk to handle redirects for sign-in/sign-up pages
         if (path.startsWith('/sign-in') || path.startsWith('/sign-up')) {
           return NextResponse.next(); // Let Clerk handle the redirect
+        }
+        
+        // For organization routes, perform additional validation
+        if (isOrganizationRoute(req)) {
+          // Extract organization slug from URL path: /org/[orgSlug]/...
+          const pathSegments = path.split('/');
+          const orgSlug = pathSegments[2]; // /org/[orgSlug]/page
+          
+          if (!orgSlug) {
+            console.log('🚫 ORG ROUTE: No organization slug in path', { userId, path });
+            return NextResponse.redirect(new URL('/dashboard?error=invalid-organization', req.url));
+          }
+          
+          // Check trial status for organization routes too
+          try {
+            const trialExpired = await isTrialExpiredForUser(userId);
+            if (trialExpired) {
+              console.log('🚫 TRIAL EXPIRED: Redirecting from organization route to trial expired page', { userId, path, orgSlug });
+              return NextResponse.redirect(new URL('/trial-expired', req.url));
+            }
+          } catch (error) {
+            console.error('Error checking trial status for organization route:', error);
+            // On error, allow access (fail open) - let layout handle validation
+          }
+          
+          // Organization membership validation is handled by the layout component
+          // This provides better error handling and user experience
+          // The layout will redirect if user doesn't have access to the organization
         }
         
         // For dashboard access, check trial status and onboarding

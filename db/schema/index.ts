@@ -6,4 +6,9 @@ export * from './subscriptions_plans';
 export * from './subscription-changes';
 export * from './invoices';
 export * from './refunds';
-export * from './user-activity'; 
+export * from './user-activity';
+
+// Organization-related tables
+export * from './organizations';
+export * from './organization-memberships';
+export * from './organization-invitations'; 

@@ -132,6 +132,31 @@ async function main() {
       initial: 0,
     });
 
+    // Project type selection
+    const { projectType } = await prompts({
+      type: 'select',
+      name: 'projectType',
+      message: 'What type of application are you building?',
+      choices: [
+        { 
+          title: 'Individual SaaS - Personal user accounts only', 
+          description: 'Simple SaaS with individual user authentication (Clerk personal accounts)',
+          value: 'individual' 
+        },
+        { 
+          title: 'B2B SaaS - Organizations + Teams', 
+          description: 'Business SaaS with organization management, team features, and seat-based billing',
+          value: 'b2b' 
+        },
+      ],
+      initial: 1, // Default to B2B since it's the full-featured option
+    }, {
+      onCancel: () => {
+        console.log('\nSetup cancelled');
+        process.exit(1);
+      },
+    });
+
     // Project setup questions
     const { projectName, projectDescription, githubRepo } = await prompts(
       [
@@ -666,6 +691,68 @@ ${projectDescription}
       // Silently continue if folder doesn't exist or can't be deleted
     }
 
+    // Remove organization features for individual projects
+    if (projectType === 'individual') {
+      spinner.start('Configuring for individual SaaS setup...');
+      
+      try {
+        // Remove organization-specific directories
+        await fs.rm(path.join(projectDir, 'app/org'), { recursive: true, force: true });
+        await fs.rm(path.join(projectDir, 'components/organizations'), { recursive: true, force: true });
+        
+        // Remove organization schema files
+        await fs.rm(path.join(projectDir, 'db/schema/organizations.ts'), { force: true });
+        await fs.rm(path.join(projectDir, 'db/schema/organization-memberships.ts'), { force: true });
+        await fs.rm(path.join(projectDir, 'db/schema/organization-invitations.ts'), { force: true });
+        
+        // Remove organization API routes
+        await fs.rm(path.join(projectDir, 'app/api/organizations'), { recursive: true, force: true });
+        
+        // Remove organization-related utility files
+        await fs.rm(path.join(projectDir, 'utils/auth/organization-helpers.ts'), { force: true });
+        await fs.rm(path.join(projectDir, 'utils/actions/organizations.ts'), { force: true });
+        await fs.rm(path.join(projectDir, 'utils/hooks/use-organization-data.ts'), { force: true });
+        await fs.rm(path.join(projectDir, 'utils/hooks/use-organization-guard.ts'), { force: true });
+        await fs.rm(path.join(projectDir, 'utils/hooks/use-organization-state.ts'), { force: true });
+        await fs.rm(path.join(projectDir, 'utils/hooks/useOrganizationSubscription.ts'), { force: true });
+        await fs.rm(path.join(projectDir, 'utils/data/shared'), { recursive: true, force: true });
+        await fs.rm(path.join(projectDir, 'utils/api/validation/organization.ts'), { force: true });
+        
+        // Remove organization documentation
+        await fs.rm(path.join(projectDir, 'add-teams-orgs-for-b2b-apps.md'), { force: true });
+        await fs.rm(path.join(projectDir, 'test-organization-routing.md'), { force: true });
+        
+        // Update middleware to remove organization routes
+        const middlewarePath = path.join(projectDir, 'middleware.ts');
+        const middlewareContent = await fs.readFile(middlewarePath, 'utf-8');
+        const updatedMiddleware = middlewareContent
+          .replace(/\/org\/.*?\)\]\*/, '') // Remove org route patterns
+          .replace(/organizationId.*?\n.*?\n/g, '') // Remove organization ID logic
+          .replace(/\/\/ Organization routes[\s\S]*?\/\/ End organization routes/g, ''); // Remove organization-specific sections
+        await fs.writeFile(middlewarePath, updatedMiddleware);
+
+        // Update database schema index to remove organization imports
+        const schemaIndexPath = path.join(projectDir, 'db/schema/index.ts');
+        const schemaContent = await fs.readFile(schemaIndexPath, 'utf-8');
+        const updatedSchema = schemaContent
+          .replace(/export \* from ['"]\.\/organizations['"];?\n?/g, '')
+          .replace(/export \* from ['"]\.\/organization-.*?['"];?\n?/g, '');
+        await fs.writeFile(schemaIndexPath, updatedSchema);
+
+        // Update subscription management to remove organization context
+        const subscriptionPath = path.join(projectDir, 'utils/subscription-management.ts');
+        const subscriptionContent = await fs.readFile(subscriptionPath, 'utf-8');
+        const updatedSubscription = subscriptionContent
+          .replace(/SubscriptionContext[\s\S]*?= 'individual' \| 'organization'/g, "SubscriptionContext = 'individual'")
+          .replace(/context === 'organization'[\s\S]*?}/g, '// Organization context removed for individual SaaS');
+        await fs.writeFile(subscriptionPath, updatedSubscription);
+        
+        spinner.succeed('Individual SaaS configuration complete');
+      } catch (error) {
+        spinner.warn('Some organization files could not be removed (this is usually fine)');
+      }
+    }
+
     // Remove .git folder and initialize new git repository
     spinner.start('Writing final configurations...');
     await fs.writeFile(path.join(projectDir, '.env'), envContent);
@@ -760,6 +847,23 @@ export default function RootLayout({
     spinner.succeed('Application layout customized');
 
     console.log(chalk.green('\n✨ Project created and pushed to GitHub successfully! ✨'));
+    
+    // Show project type specific information
+    if (projectType === 'individual') {
+      console.log(chalk.yellow('\n🎯 Individual SaaS Project Configuration:'));
+      console.log(chalk.yellow('   • Personal user accounts with Clerk authentication'));
+      console.log(chalk.yellow('   • Individual subscription management'));
+      console.log(chalk.yellow('   • Organization features have been removed'));
+      console.log(chalk.yellow('   • Optimized for simple, personal-use SaaS applications'));
+    } else {
+      console.log(chalk.yellow('\n🏢 B2B SaaS Project Configuration:'));
+      console.log(chalk.yellow('   • Organization management with team features'));
+      console.log(chalk.yellow('   • Clerk Organizations integration'));
+      console.log(chalk.yellow('   • Seat-based billing and subscription management'));
+      console.log(chalk.yellow('   • Member invitations and role management'));
+      console.log(chalk.yellow('   • Full-featured B2B SaaS boilerplate'));
+    }
+    
     console.log(chalk.cyan('\nNext steps:'));
     console.log(chalk.cyan('1. cd into your project'));
     console.log(chalk.cyan(`   cd ${projectName}`));
@@ -770,6 +874,13 @@ export default function RootLayout({
       console.log(chalk.cyan('3. Run `bun run dev` to start the development server'));
     } else {
       console.log(chalk.cyan('2. Run `bun run dev` to start the development server'));
+    }
+    
+    if (projectType === 'b2b') {
+      console.log(chalk.cyan('\n📚 B2B Features Documentation:'));
+      console.log(chalk.cyan('   • Organization setup: Check the included documentation'));
+      console.log(chalk.cyan('   • Billing configuration: Configure Stripe for seat-based billing'));
+      console.log(chalk.cyan('   • Member management: Set up organization roles and permissions'));
     }
   } catch (error) {
     if (spinner) spinner.fail('Failed to create project');

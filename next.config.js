@@ -7,20 +7,10 @@ const nextConfig = {
   
   experimental: {
     // React Compiler is experimental but available in stable
-    reactCompiler: false, // Disabled for stability
+    reactCompiler: false,
     
     // Faster development builds
     webpackBuildWorker: true,
-    
-    // Turbopack configuration for development
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
-      },
-    },
   },
   images: {
     dangerouslyAllowSVG: true,
@@ -97,6 +87,15 @@ const nextConfig = {
         ]
       }
     ];
+  },
+  // Turbopack is now stable — configure at the root level
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
   },
 };
 module.exports = nextConfig;
