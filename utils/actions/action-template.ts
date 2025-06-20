@@ -9,7 +9,7 @@ export async function actionTemplate() {
   // Force headers evaluation first to avoid headers() errors
   await headers();
   
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if (!userId) {
     return 'You must be signed in';

@@ -1,0 +1,256 @@
+# Titan Implementation: Apply Rival-Sonar Upgrades - PRD
+
+## Project Overview
+Systematically implement the battle-tested improvements discovered from the rival-sonar analysis into the main Titan boilerplate. This implementation will enhance Titan with enterprise-grade features while maintaining backward compatibility and following progressive enhancement principles.
+
+**Target Outcome**: Enhanced Titan boilerplate that incorporates 6+ months of real-world learnings from rival-sonar, making future Titan-generated projects benefit from production-tested improvements across 25 domains.
+
+## Tech Stack Enhancements
+- **Frontend**: Next.js 15+ with enhanced optimizations, React 19 patterns
+- **Performance**: React-scan integration, Turbopack development, enhanced skeleton loading
+- **Database**: Advanced Drizzle patterns, dual client architecture, comprehensive RLS
+- **Authentication**: Latest Clerk SDK, configuration-based auth, trial management
+- **Payments**: Enterprise Stripe integration, subscription change tracking, billing activity logging
+- **Email**: Modular React Email services, multi-stage sequences, cron automation
+- **Background Jobs**: QStash integration, Vercel cron system, job status tracking
+- **Error Handling**: Advanced error boundaries, performance monitoring, activity logging
+- **Security**: Multi-tier rate limiting, comprehensive input validation, CSP headers
+- **UX**: Sophisticated onboarding, accessibility excellence, responsive design
+- **Analytics**: Feature flags, performance tracking, business intelligence
+- **Mobile**: PWA infrastructure, touch optimization, adaptive components
+- **Testing**: Comprehensive QA patterns, mock systems, validation utilities
+- **SEO**: Dynamic metadata, sitemap generation, social media optimization
+- **Package Manager**: Bun with enhanced scripts and tooling
+- **Implementation Tools**: TaskMaster MCP, progressive enhancement patterns
+
+## Implementation Context
+- **Source Analysis**: `./evolved-projects/rival-sonar/` (comprehensive 25-task analysis completed)
+- **Target Implementation**: `./` (main Titan boilerplate)
+- **Implementation Approach**: Progressive enhancement, backward compatibility first
+- **Risk Tolerance**: Conservative - maintain existing functionality while adding opt-in enhancements
+
+## Implementation Domains (25 Priority Areas)
+
+### Phase 1: Core Infrastructure (High Priority)
+1. **Authentication System Enhancements**
+   - Latest Clerk SDK integration (`@clerk/nextjs@6.19.1`, `@clerk/themes@2.2.20`)
+   - Configuration-based authentication with `config.auth.enabled` flag
+   - Advanced middleware with edge-compatible trial checking
+   - Enhanced access control patterns and beta management
+
+2. **Payment System Upgrades**
+   - Latest Stripe SDK (`stripe@14.16.0`, `@stripe/stripe-js@3.4.0`)
+   - Comprehensive webhook processing (1,460-line handler)
+   - Subscription change tracking database with dedicated table
+   - Advanced billing activity logger with 12+ activity types
+
+3. **Database Layer Optimizations**
+   - Dual client architecture (`createDirectClient()`, `createServerClient()`)
+   - Latest Drizzle ORM (`drizzle-orm@0.40.0`, `drizzle-kit@0.30.5`)
+   - Comprehensive RLS policies and security automation
+   - Advanced query optimization patterns
+
+### Phase 2: Developer Experience (High Priority)
+4. **Next.js 15+ Optimizations**
+   - Turbopack development server integration
+   - Advanced compiler configuration (`webpackBuildWorker: true`)
+   - React 19 compatibility and patterns
+   - Multiple development server options
+
+5. **Performance Infrastructure**
+   - React-scan integration for development debugging
+   - Web Vitals tracking and performance monitoring
+   - Comprehensive skeleton loading system (10 components)
+   - Navigation performance tracking
+
+6. **Error Handling & Monitoring**
+   - Advanced error boundary (195-line implementation)
+   - Centralized activity logging (133-line logger)
+   - Specialized billing activity logger (339 lines)
+   - Production-ready error patterns
+
+### Phase 3: Advanced Features (Medium Priority)
+7. **Email System Architecture**
+   - Modular email services (5 specialized services)
+   - React Email integration (`@react-email/render`)
+   - Multi-stage trial email sequences
+   - Weekly newsletter automation
+
+8. **Background Job System**
+   - QStash integration (`@upstash/qstash`)
+   - Vercel cron job system (4 automated jobs)
+   - Job status tracking and retry logic
+   - Database automation scripts
+
+9. **Security Implementations**
+   - Multi-tier rate limiting (API: 20/10s, Auth: 5/60s, Payment: 10/60s)
+   - Comprehensive input validation (15+ Zod schemas)
+   - Advanced CSP and security headers
+   - Private beta infrastructure
+
+### Phase 4: User Experience (Medium Priority)
+10. **Component Library Enhancements**
+    - Comprehensive skeleton library (10 components)
+    - Magic UI components (BorderBeam, OrbitingCircles)
+    - Advanced error boundaries with recovery
+    - Performance monitoring integration
+
+11. **UX Pattern Improvements**
+    - Sophisticated onboarding flow (5-step progressive)
+    - Advanced loading state patterns
+    - Accessibility excellence (ARIA compliance)
+    - Instant feedback mechanisms
+
+12. **Mobile & PWA Enhancements**
+    - Custom `useMediaQuery` hook
+    - Mobile-first Tailwind configuration
+    - Touch-optimized interactions
+    - Progressive Web App infrastructure
+
+### Phase 5: Analytics & Integration (Lower Priority)
+13. **Analytics & Tracking**
+    - Vercel flags integration (`@vercel/flags/next`)
+    - Performance tracking infrastructure
+    - Rate limiting analytics
+    - User journey tracking
+
+14. **API & Third-Party Integrations**
+    - Comprehensive webhook systems
+    - AI integration infrastructure (dual providers)
+    - Feature flag system with Edge Config
+    - User management API patterns
+
+15. **SEO & Meta Tag System**
+    - Template-based metadata system
+    - Dynamic sitemap generation
+    - Social media optimization
+    - Content marketing SEO structure
+
+### Phase 6: Quality & Testing (Lower Priority)
+16. **Testing Patterns & QA**
+    - Comprehensive test checklist (440 lines)
+    - Mock system architecture
+    - Trial testing utilities
+    - Schema validation testing
+
+17. **Utility Function Improvements**
+    - React Query hook architecture (17 specialized hooks)
+    - Standardized ActionResult<T> pattern
+    - Advanced hook patterns
+    - Error handling integration
+
+18. **Scripts & Tooling**
+    - Enhanced development scripts
+    - Database management tools
+    - RLS policy automation
+    - Production utilities
+
+### Phase 7: Configuration & Structure (Lower Priority)
+19. **Configuration Improvements**
+    - Enhanced Drizzle configuration
+    - Vercel cron job setup
+    - Advanced Supabase configuration
+    - Shadcn UI optimizations
+
+20. **App Structure Improvements**
+    - Multi-hook authentication patterns
+    - Dashboard component organization
+    - Security-first layout implementation
+    - Route protection enhancements
+
+21. **Suspense & Loading Patterns**
+    - Comprehensive Suspense architecture
+    - Strategic boundary placement
+    - Progressive navigation patterns
+    - Loading state architecture
+
+22. **Advanced Access Control**
+    - Multi-tier feature flag system
+    - Demo configuration management
+    - Access restricted pages
+    - Edge-compatible middleware
+
+23. **Development Server Optimizations**
+    - Multiple dev server modes
+    - React-scan performance monitoring
+    - Build workflow enhancements
+    - Cache management
+
+24. **CLI Package Improvements**
+    - Enhanced utility scripts
+    - Test automation tools
+    - Mock system management
+    - Performance testing utilities
+
+25. **Final Integration & Documentation**
+    - Comprehensive documentation updates
+    - Pattern library creation
+    - Migration guides
+    - Best practices documentation
+
+## Implementation Strategy
+
+### Progressive Enhancement Approach
+- **Opt-in Features**: New features as optional enhancements
+- **Backward Compatibility**: Maintain existing API interfaces
+- **Gradual Migration**: Implement improvements incrementally
+- **Safety First**: Extensive testing at each phase
+
+### Implementation Phases
+1. **Core Infrastructure** (Weeks 1-2): Authentication, Payments, Database
+2. **Developer Experience** (Weeks 3-4): Next.js optimizations, Performance, Error handling
+3. **Advanced Features** (Weeks 5-6): Email, Background jobs, Security
+4. **User Experience** (Weeks 7-8): Components, UX patterns, Mobile
+5. **Analytics & Integration** (Weeks 9-10): Analytics, APIs, SEO
+6. **Quality & Testing** (Weeks 11-12): Testing, Utilities, Scripts
+7. **Final Polish** (Weeks 13-14): Configuration, Structure, Documentation
+
+### Quality Assurance
+- **Testing After Each Domain**: Verify Titan CLI generation works
+- **Generated Project Testing**: Ensure new projects build and run
+- **Backward Compatibility**: Test with existing Titan projects
+- **Performance Benchmarking**: Measure improvements vs baseline
+
+## Expected Deliverables
+
+### Enhanced Titan Boilerplate
+- **25 Domain Improvements**: All analyzed improvements implemented
+- **Maintained CLI Functionality**: Titan generation continues working
+- **Enhanced Documentation**: Updated guides and examples
+- **Migration Guides**: For existing Titan users
+
+### Implementation Documentation
+- **Feature Documentation**: Comprehensive guides for new features
+- **Migration Instructions**: Step-by-step upgrade paths
+- **Best Practices**: Patterns and conventions documentation
+- **Troubleshooting Guides**: Common issues and solutions
+
+### Quality Assurance Results
+- **Test Coverage**: Comprehensive testing of all new features
+- **Performance Metrics**: Before/after performance comparisons
+- **Compatibility Reports**: Backward compatibility verification
+- **Security Audit**: Security improvements validation
+
+## Technical Implementation
+
+### Development Tools
+- **TaskMaster MCP**: Systematic task management and progress tracking
+- **Cursor AI**: Intelligent code implementation and pattern recognition
+- **Git Branching**: Feature branches for each domain implementation
+- **Bun**: Package management and script execution
+- **Biome**: Code quality and formatting
+
+### Testing Strategy
+- **Unit Testing**: Test individual improvements
+- **Integration Testing**: Test feature interactions
+- **CLI Testing**: Verify Titan generation functionality
+- **Generated Project Testing**: Test complete project workflows
+- **Performance Testing**: Benchmark improvements
+
+### Documentation Standards
+- **Implementation Logs**: Document all changes and decisions
+- **Code Examples**: Provide complete, functional examples
+- **Migration Guides**: Clear step-by-step instructions
+- **Best Practices**: Document patterns and conventions
+
+This comprehensive implementation will transform Titan into an enterprise-grade boilerplate that incorporates 6+ months of real-world production learnings while maintaining the simplicity and reliability that makes Titan valuable for rapid SaaS development. 

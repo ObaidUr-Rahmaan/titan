@@ -1,7 +1,7 @@
 {
   "name": "@codeandcreed/create-titan",
-  "version": "3.1.5",
-  "description": "CLI tool to create new Titan projects",
+  "version": "3.2.0",
+  "description": "CLI tool to create new Titan projects with options for Individual or B2B SaaS",
   "type": "commonjs",
   "main": "dist/index.js",
   "bin": {

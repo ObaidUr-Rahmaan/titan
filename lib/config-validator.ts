@@ -1,42 +1,44 @@
-import config from '@/config';
+/**
+ * Configuration validator for environment variables
+ * Checks required environment variables for different features
+ */
 
-const requiredEnvVars = {
+const REQUIRED_ENV_VARS = {
+  // Authentication
   auth: ['NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', 'CLERK_SECRET_KEY'],
-  payments: [
-    'STRIPE_SECRET_KEY',
-    'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
-    'NEXT_PUBLIC_STRIPE_PRODUCT_1_PRICE_ID',
-  ],
+  
+  // Database
+  database: ['DATABASE_URL'],
+  
+  // Payments
+  payments: ['STRIPE_SECRET_KEY', 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY', 'STRIPE_WEBHOOK_SECRET'],
+  
+  // Email
   email: ['PLUNK_API_KEY'],
-  ratelimit: ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'],
+  
+  // Analytics
+  analytics: ['NEXT_PUBLIC_VERCEL_ANALYTICS_ID'],
 } as const;
 
-function checkEnvVars(feature: keyof typeof requiredEnvVars): boolean {
-  const vars = requiredEnvVars[feature];
-  return vars.every((envVar) => {
-    const value = process.env[envVar];
-    return value !== undefined && value !== '';
-  });
-}
-
-export function validateConfig() {
-  Object.entries(config).forEach(([feature, settings]) => {
-    if (
-      feature in requiredEnvVars &&
-      settings.enabled &&
-      !checkEnvVars(feature as keyof typeof requiredEnvVars)
-    ) {
-      const missingVars = requiredEnvVars[feature as keyof typeof requiredEnvVars]
-        .filter((envVar) => !process.env[envVar])
-        .join(', ');
-
-      console.error(
-        `${feature} is enabled in config but missing required environment variables: ${missingVars}. ` +
-          `Please add them to your .env or .env.local file.`
-      );
-
-      // Disable the feature
-      (config as any)[feature].enabled = false;
+export function validateConfig(features: (keyof typeof REQUIRED_ENV_VARS)[] = []) {
+  const missing: string[] = [];
+  
+  for (const feature of features) {
+    const vars = REQUIRED_ENV_VARS[feature];
+    if (!vars) continue;
+    
+    for (const envVar of vars) {
+      if (!process.env[envVar]) {
+        missing.push(envVar);
+      }
     }
-  });
+  }
+  
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables for features [${features.join(', ')}]: ${missing.join(', ')}`
+    );
+  }
+  
+  return true;
 }

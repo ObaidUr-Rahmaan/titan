@@ -1,4 +1,4 @@
-import { pgTable, serial, timestamp, text, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, timestamp, text, varchar, integer } from 'drizzle-orm/pg-core';
 
 export const payments = pgTable('payments', {
   id: serial('id').primaryKey(),
@@ -11,5 +11,8 @@ export const payments = pgTable('payments', {
   currency: varchar('currency').notNull(),
   userId: varchar('user_id').notNull(),
   customerDetails: text('customer_details').notNull(),
-  paymentIntent: varchar('payment_intent').notNull()
+  paymentIntent: varchar('payment_intent').notNull(),
+  
+  // Organization support - nullable for backward compatibility
+  organizationId: integer('organization_id') // References organizations.id
 });

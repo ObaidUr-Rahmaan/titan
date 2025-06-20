@@ -1,10 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: [
-    // Add your specific ngrok URL here when using it
-    '9c27-94-197-224-34.ngrok-free.app',
-    // You'll need to update this with your actual ngrok URL when it changes
-  ],
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  
+  experimental: {
+    // React Compiler is experimental but available in stable
+    reactCompiler: false,
+    
+    // Faster development builds
+    webpackBuildWorker: true,
+  },
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
@@ -55,7 +62,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; worker-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.clerk.io https://*.clerk.accounts.dev https://va.vercel-scripts.com https://challenges.cloudflare.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: https://img.clerk.com; font-src 'self' data:; connect-src 'self' https://api.stripe.com https://clerk.io https://*.clerk.accounts.dev https://*.supabase.co https://*.upstash.io; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.clerk.accounts.dev https://challenges.cloudflare.com; object-src 'none'; base-uri 'self';"
+            value: "default-src 'self'; worker-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.clerk.io https://*.clerk.accounts.dev https://va.vercel-scripts.com https://challenges.cloudflare.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: https://img.clerk.com; font-src 'self' data:; connect-src 'self' https://api.stripe.com https://clerk.io https://*.clerk.accounts.dev https://*.supabase.co; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.clerk.accounts.dev https://challenges.cloudflare.com; object-src 'none'; base-uri 'self';"
           },
           {
             key: 'X-Content-Type-Options',
@@ -80,6 +87,15 @@ const nextConfig = {
         ]
       }
     ];
+  },
+  // Turbopack is now stable — configure at the root level
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
   },
 };
 module.exports = nextConfig;

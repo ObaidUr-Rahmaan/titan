@@ -26,6 +26,23 @@ Task Master offers two primary ways to interact:
     - The CLI commands often mirror the MCP tools (e.g., `task-master list` corresponds to `get_tasks`).
     - Refer to [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc) for a detailed command reference.
 
+## Titan Upgrade Agent Workflow
+
+In addition to standard development workflow, Titan includes an intelligent upgrade system:
+
+**Agent-Driven External Analysis**: 
+- When the user provides a GitHub URL with phrases like "analyze this project and upgrade Titan [URL]"
+- The agent automatically clones external SaaS projects, analyzes them for improvements, and upgrades Titan
+- Uses TaskMaster for systematic analysis across 20 domains
+- All analysis happens in the same Cursor window without opening new windows
+- Refer to [`titan-upgrade-agent.mdc`](mdc:.cursor/rules/titan-upgrade-agent.mdc) for complete workflow details
+
+**Two-Way Upgrade System**:
+- **Upstream**: Extract improvements from evolved projects back to Titan (via agent workflow)
+- **Downstream**: Upgrade existing projects with latest Titan improvements (via upgrade scripts)
+- Systematic domain-based analysis ensures comprehensive coverage
+- Safety-first approach with backward compatibility checks
+
 ## Standard Development Workflow Process
 
 -   Start new projects by running `initialize_project` tool / `task-master init` or `parse_prd` / `task-master parse-prd --input='<prd-file.txt>'` (see [`taskmaster.mdc`](mdc:.cursor/rules/taskmaster.mdc)) to generate initial tasks.json

@@ -62,12 +62,6 @@ export function SecurityFeatures() {
       delay: 0.2,
     },
     {
-      icon: <ServerCrash className="h-5 w-5" />,
-      name: "API Rate Limiting",
-      description: "Upstash Redis-based rate limiting protects your API endpoints from abuse and DDoS attacks.",
-      delay: 0.3,
-    },
-    {
       icon: <FileJson className="h-5 w-5" />,
       name: "Input Validation",
       description: "Zod schema validation for critical endpoints with type-safe APIs to prevent injection attacks and ensure data integrity.",

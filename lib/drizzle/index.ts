@@ -14,8 +14,16 @@ export function createDirectClient() {
   }
 
   if (!directClientSingleton) {
-    const client = postgres(process.env.DIRECT_URL);
-    directClientSingleton = drizzle(client, { schema });
+    const client = postgres(process.env.DIRECT_URL, {
+      max: 1, // Limit connections for singleton
+      idle_timeout: 20,
+      connect_timeout: 10,
+      onnotice: process.env.NODE_ENV === 'development' ? console.log : undefined,
+    });
+    directClientSingleton = drizzle(client, { 
+      schema,
+      logger: process.env.NODE_ENV === 'development'
+    });
   }
 
   return directClientSingleton;

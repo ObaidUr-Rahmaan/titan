@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { ClerkProvider } from '@clerk/nextjs';
 import config from '@/config';
 
