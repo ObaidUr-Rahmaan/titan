@@ -3,11 +3,10 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "dev:fast": "next dev",
+    "dev": "next dev",
+    "dev:fast": "next dev --turbopack",
     "dev:scan": "REACT_SCAN_ENABLED=true next dev --turbopack & sleep 5 && npx react-scan@latest localhost:3000",
     "scan": "npx react-scan@latest http://localhost:3000",
-    "dev:performance": "next dev --turbopack",
     "dev:clean": "rm -rf .next && rm -rf node_modules/.cache && next dev --turbopack",
     "build": "next build",
     "start": "next start",
