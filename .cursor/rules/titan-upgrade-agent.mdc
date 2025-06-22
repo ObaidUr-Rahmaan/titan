@@ -1,0 +1,203 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Titan Upgrade Agent Workflow
+
+This rule enables the Cursor agent to analyze external SaaS projects and upgrade Titan automatically when the user provides a project URL.
+
+## Trigger Phrases
+
+When the user says any of these:
+- "analyze this project and upgrade Titan [URL]"
+- "upgrade Titan using this project [URL]" 
+- "extract improvements from [URL] to Titan"
+- "analyze [URL] for Titan upgrades"
+
+## Agent Workflow
+
+### 1. Parse Project URL
+- Accept GitHub URLs in any format:
+  - `https://github.com/user/repo`
+  - `github.com/user/repo`
+  - `git@github.com:user/repo.git`
+- Extract repository information and validate
+
+### 2. Clone External Project
+```bash
+# Use the upgrade-titan script to clone the project
+bun scripts/upgrade-titan.ts [URL] --verbose
+```
+
+### 3. Initialize TaskMaster for Upgrade Analysis
+```bash
+# Initialize TaskMaster if not already done
+bun scripts/taskmaster-init.ts
+
+# Set up for analysis
+mkdir -p .taskmaster/docs
+```
+
+### 4. Create Upgrade PRD
+Use the Titan upgrade PRD template from `docs/titan-upgrade-prd-template.txt`:
+- Replace `[EVOLVED_PROJECT_NAME]` with the cloned project name
+- Replace `[EVOLVED_PROJECT_PATH]` with the local clone path
+- Replace `[ANALYSIS_DATE]` with current date
+- Replace `[REPOSITORY_URL]` with the GitHub URL
+- Save as `.taskmaster/docs/prd.txt`
+
+### 5. Parse PRD with TaskMaster
+```bash
+# Generate upgrade tasks from PRD
+npx task-master-ai parse-prd .taskmaster/docs/prd.txt --force --research
+```
+
+### 6. Systematic Analysis Process
+
+**IMPORTANT**: Work through domains systematically using TaskMaster:
+
+1. **Get current tasks**: `npx task-master-ai list`
+2. **Get next task**: `npx task-master-ai next`
+3. **Analyze domain**: Compare cloned project vs current Titan
+4. **Update task**: Document findings and recommendations
+5. **Mark complete**: Set task status to done
+6. **Repeat**: Continue until all domains analyzed
+
+#### Analysis Framework for Each Domain
+
+For each domain task:
+1. **Explore the cloned project** in the domain area
+2. **Compare with current Titan implementation**
+3. **Identify specific improvements**:
+   - New patterns or approaches
+   - Better dependency versions
+   - Enhanced configurations
+   - Improved file structures
+   - Better code patterns
+4. **Assess compatibility**:
+   - Will it break existing Titan functionality?
+   - Does it require major changes?
+   - Is it backward compatible?
+5. **Document recommendations**:
+   - Specific files to modify
+   - Code changes to make
+   - Migration steps needed
+   - Risk assessment
+
+#### Key Analysis Areas
+
+**Core Infrastructure**:
+- `package.json` dependencies and versions
+- `next.config.js` optimizations
+- `tailwind.config.ts` improvements
+- TypeScript configurations
+- Build and deployment optimizations
+
+**Development Experience**:
+- Better file organization patterns
+- Improved development scripts
+- Enhanced tooling configurations
+- Better error handling patterns
+
+**Features & Integration**:
+- Authentication improvements
+- Payment processing enhancements
+- Database schema optimizations
+- API pattern improvements
+- Email service enhancements
+
+**Quality & Performance**:
+- Testing strategies and tools
+- Performance optimization patterns
+- Security improvements
+- Monitoring and analytics
+
+### 7. Apply Approved Improvements
+
+After analysis, for each approved improvement:
+
+1. **Create implementation tasks**:
+```bash
+npx task-master-ai add-task --prompt="Implement [improvement]: [description]" --research
+```
+
+2. **Apply changes systematically**:
+   - Modify Titan files as recommended
+   - Test changes incrementally
+   - Ensure backward compatibility
+   - Update documentation if needed
+
+3. **Validate improvements**:
+   - Ensure no breaking changes
+   - Test critical functionality
+   - Verify build still works
+
+### 8. Cleanup and Summary
+
+```bash
+# Clean up the cloned project
+rm -rf .titan-analysis
+
+# Generate summary report
+npx task-master-ai list --status=done
+```
+
+## Agent Instructions
+
+### Analysis Commands
+```bash
+# View cloned project structure
+find .titan-analysis -type f -name "*.json" -o -name "*.config.*" -o -name "middleware.*" | head -20
+
+# Compare package.json files
+diff package.json .titan-analysis/[project-name]/package.json || true
+
+# Check for new dependencies
+cat .titan-analysis/[project-name]/package.json | jq '.dependencies | keys[]' | sort
+
+# Look for configuration improvements
+ls -la .titan-analysis/[project-name]/*.config.*
+```
+
+### Safety Checks
+- **Never break existing functionality**
+- **Always preserve backward compatibility** 
+- **Test critical paths** after applying changes
+- **Document all changes** made to Titan
+- **Use progressive enhancement** approach
+
+### File Organization
+- Keep analysis files in `.taskmaster/docs/`
+- Document all findings in TaskMaster tasks
+- Create implementation tasks for approved changes
+- Maintain clear audit trail of modifications
+
+## Example Interaction
+
+User: "analyze this project and upgrade Titan https://github.com/awesome-user/evolved-saas"
+
+Agent Response:
+1. "🚀 Starting Titan upgrade analysis for evolved-saas..."
+2. Runs `bun scripts/upgrade-titan.ts https://github.com/awesome-user/evolved-saas --verbose`
+3. Creates upgrade PRD from template
+4. Initializes TaskMaster with upgrade tasks
+5. Works through each domain systematically
+6. Documents findings and applies approved improvements
+7. "✅ Titan upgrade analysis complete! Applied [X] improvements."
+
+## Integration Points
+
+- Works with existing [titan-upgrade-workflow.mdc](mdc:.cursor/rules/titan-upgrade-workflow.mdc)
+- Uses [analysis-domains.mdc](mdc:.cursor/rules/analysis-domains.mdc) for systematic coverage
+- Follows [migration-patterns.mdc](mcp:.cursor/rules/migration-patterns.mdc) for safe upgrades
+- Leverages TaskMaster MCP tools from [taskmaster.mdc](mcp:.cursor/rules/taskmaster.mdc)
+
+## Success Criteria
+
+- External project successfully cloned and analyzed
+- All 20 analysis domains covered systematically
+- Concrete improvement recommendations generated
+- Compatible improvements applied to Titan
+- No breaking changes introduced
+- Clear documentation of all modifications

@@ -1,4 +1,4 @@
-import { pgTable, serial, timestamp, text, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, timestamp, text, varchar, integer } from 'drizzle-orm/pg-core';
 
 export const refunds = pgTable('refunds', {
   id: serial('id').primaryKey(),
@@ -11,5 +11,8 @@ export const refunds = pgTable('refunds', {
   refundDate: timestamp('refund_date').notNull(),
   status: varchar('status').notNull(),
   reason: text('reason'),
-  metadata: text('metadata')
+  metadata: text('metadata'),
+  
+  // Organization support - nullable for backward compatibility
+  organizationId: integer('organization_id') // References organizations.id
 }); 

@@ -18,26 +18,36 @@ Automatically analyze evolved SaaS projects to identify improvements for Titan.
 
 ### Quick Start
 
-1. **Via Cursor Chat**: Simply type "I want to upgrade Titan" and the script will guide you through the process.
-
-2. **Via CLI**: Run the script directly:
+1. **🤖 Via Cursor Agent (Recommended)**: Simply tell the agent:
    ```bash
-   bun run upgrade-titan
+   "analyze this project and upgrade Titan https://github.com/user/evolved-saas"
+   ```
+
+2. **📜 Via CLI**: Run the script directly:
+   ```bash
+   # With any GitHub URL format
+   bun scripts/upgrade-titan.ts https://github.com/user/evolved-saas
+   bun scripts/upgrade-titan.ts git@github.com:user/evolved-saas.git
+   
+   # With verbose logging
+   bun scripts/upgrade-titan.ts https://github.com/user/evolved-saas --verbose
    ```
 
 ### What it does
 
-1. **Prompts for GitHub SSH URL**: Enter the SSH URL of an evolved SaaS project you want to analyze
-2. **Clones Repository**: Automatically clones the project (tries SSH first, falls back to HTTPS)
-3. **Sets up Analysis Environment**: Creates analysis prompts and checklists
-4. **Launches Cursor**: Opens the cloned project in Cursor with pre-configured analysis instructions
+1. **Accepts GitHub URLs**: Handles HTTPS, SSH, or github.com/user/repo formats
+2. **Clones Repository**: Automatically clones the project using HTTPS-first approach
+3. **Creates Analysis Summary**: Generates `.titan-analysis-summary.md` with project info
+4. **Agent Integration**: Works seamlessly with Cursor agent for systematic analysis
+5. **No Window Management**: Stays within current Cursor workspace
 
 ### Analysis Process
 
-The script creates two files in the cloned repository:
+The script creates analysis summary files:
 
-- **`.cursor-analysis-prompt.md`**: Detailed instructions for the AI analysis
-- **`.cursor-analysis-checklist.md`**: Comprehensive checklist of areas to analyze
+- **`.titan-analysis-summary.md`**: Project information and analysis status for the agent
+- **Cloned project**: Available at `.titan-analysis/[project-name]` for comparison
+- **Agent workflow**: Automatically creates PRD and TaskMaster tasks for systematic analysis
 
 ### Analysis Categories
 
@@ -148,6 +158,9 @@ Both scripts integrate with TaskMaster AI for systematic upgrade management:
 ### Cursor Rules Integration
 
 Works with `.cursor/rules/` for guided AI assistance:
+
+**Agent Workflow**:
+- `titan-upgrade-agent.mcd`: Complete agent workflow for external project analysis
 
 **Upstream (Titan improvement)**:
 - `titan-upgrade-workflow.mcd`: Orchestrates improvement extraction

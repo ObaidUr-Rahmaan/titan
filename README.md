@@ -10,7 +10,6 @@ Easy-to-setup, fully-featured, and customizable NextJS 15 Boilerplate.
 - [Clerk](https://clerk.com/) - Authenticate your users (ban, impersonate etc.)
 - [Stripe](https://stripe.com/) - Collect Payments
 - [Plunk](https://useplunk.com/) - Send Emails Programmatically
-- [Upstash](https://upstash.com/) - Redis for rate limiting
 - [DataFast](https://datafa.st/) - User Analytics for Actionable Growth (Know exactly which marketing channels are working)
 - [UserJot](https://userjot.com/) - User Feedback/Bug-Reports and Product Roadmap
 - [GetFernand](https://getfernand.com/) - Fast, Calm Customer Support
@@ -30,16 +29,25 @@ Apply latest Titan improvements to existing projects safely and selectively.
 
 ### Upstream: Analyze Evolved Projects → Improve Titan
 
-**Quick Start via Script**:
+**🤖 Agent-Driven (Recommended)**:
 ```bash
-# Automated setup via script
-bun scripts/upgrade-titan.ts --project-path ./evolved-projects/my-saas-app
+# In Cursor chat, just provide the GitHub URL:
+"analyze this project and upgrade Titan https://github.com/user/evolved-saas"
+```
+The agent automatically:
+- Clones the external project locally
+- Creates upgrade PRD from template  
+- Analyzes systematically across 20 domains
+- Applies compatible improvements to Titan
+- All within the same Cursor window!
 
-# Or via interactive prompt
-bun run upgrade-titan
+**📜 Script-Based**:
+```bash
+# Manual clone and analyze via script
+bun scripts/upgrade-titan.ts https://github.com/user/evolved-saas --verbose
 ```
 
-**Manual Setup**:
+**⚙️ Manual Setup**:
 1. **Clone your evolved project** into the Titan workspace:
    ```bash
    mkdir evolved-projects
@@ -136,6 +144,7 @@ All upgrades follow strict **compatibility and safety** rules:
 
 ### Documentation
 
+- **Agent Workflow**: [`.cursor/rules/titan-upgrade-agent.mdc`](.cursor/rules/titan-upgrade-agent.mdc)
 - **Upstream**: [`.cursor/rules/titan-upgrade-workflow.mdc`](.cursor/rules/titan-upgrade-workflow.mdc)
 - **Downstream**: [`.cursor/rules/project-upgrade-workflow.mdc`](.cursor/rules/project-upgrade-workflow.mdc)
 - **Compatibility**: [`.cursor/rules/upgrade-compatibility.mdc`](.cursor/rules/upgrade-compatibility.mdc)
@@ -144,3 +153,7 @@ All upgrades follow strict **compatibility and safety** rules:
 ---
 
 Detailed Docs [here](https://blueprint.codeandcreed.tech/product-development/titan)
+
+### New Features (coming soon)
+
+- Implement teams/orgs based auth

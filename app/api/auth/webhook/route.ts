@@ -5,9 +5,14 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { Webhook } from 'svix';
 import { sendWelcomeEmail } from '@/lib/welcome-email-service';
+import { createDirectClient } from '@/lib/drizzle';
+import { organizations, organizationMemberships, users } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
 
 export async function POST(req: Request) {
   console.log(`[CLERK WEBHOOK] Received webhook request at ${new Date().toISOString()}`);
+  
+  const db = createDirectClient();
   
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
@@ -128,6 +133,207 @@ export async function POST(req: Request) {
         });
       } catch (error: any) {
         console.error(`[CLERK WEBHOOK] Error updating user in database:`, error);
+        return NextResponse.json({
+          status: 400,
+          message: error.message,
+        });
+      }
+      break;
+
+    case 'organization.created':
+      try {
+        console.log(`[CLERK WEBHOOK] Processing organization.created event for org ID: ${id}`);
+        
+        const orgData = {
+          name: payload?.data?.name,
+          slug: payload?.data?.slug,
+          clerk_org_id: payload?.data?.id,
+          created_by: payload?.data?.created_by,
+        };
+        
+        console.log(`[CLERK WEBHOOK] Creating organization with data:`, orgData);
+        
+        // Insert organization into database
+        const [newOrg] = await db.insert(organizations).values({
+          name: orgData.name,
+          slug: orgData.slug,
+          clerkOrganizationId: orgData.clerk_org_id,
+        }).returning();
+
+        console.log(`[CLERK WEBHOOK] Organization successfully created in database:`, newOrg);
+        
+        // Add creator as admin member
+        if (orgData.created_by) {
+          // First, find the user by their Clerk ID
+          const [user] = await db.select({ id: users.id })
+            .from(users)
+            .where(eq(users.clerkUserId, orgData.created_by));
+          
+          if (user) {
+            await db.insert(organizationMemberships).values({
+              organizationId: newOrg.id,
+              userId: user.id,
+              clerkOrganizationId: orgData.clerk_org_id,
+              clerkUserId: orgData.created_by,
+              role: 'admin',
+            });
+            console.log(`[CLERK WEBHOOK] Added creator as admin member for org ${newOrg.id}`);
+          }
+        }
+        
+        return NextResponse.json({
+          status: 200,
+          message: 'Organization created successfully',
+          organizationId: newOrg.id,
+        });
+      } catch (error: any) {
+        console.error(`[CLERK WEBHOOK] Error creating organization:`, error);
+        return NextResponse.json({
+          status: 400,
+          message: error.message,
+        });
+      }
+      break;
+
+    case 'organization.updated':
+      try {
+        console.log(`[CLERK WEBHOOK] Processing organization.updated event for org ID: ${id}`);
+        
+        const updateData = {
+          name: payload?.data?.name,
+          slug: payload?.data?.slug,
+        };
+        
+        console.log(`[CLERK WEBHOOK] Updating organization with data:`, updateData);
+        
+        await db.update(organizations)
+          .set({
+            name: updateData.name,
+            slug: updateData.slug,
+            updatedAt: new Date(),
+          })
+          .where(eq(organizations.clerkOrganizationId, payload?.data?.id));
+
+        console.log(`[CLERK WEBHOOK] Organization successfully updated in database for org ID: ${id}`);
+        
+        return NextResponse.json({
+          status: 200,
+          message: 'Organization updated successfully',
+        });
+      } catch (error: any) {
+        console.error(`[CLERK WEBHOOK] Error updating organization:`, error);
+        return NextResponse.json({
+          status: 400,
+          message: error.message,
+        });
+      }
+      break;
+
+    case 'organization.deleted':
+      try {
+        console.log(`[CLERK WEBHOOK] Processing organization.deleted event for org ID: ${id}`);
+        
+        await db.update(organizations)
+          .set({
+            isActive: false,
+            deletedAt: new Date(),
+          })
+          .where(eq(organizations.clerkOrganizationId, payload?.data?.id));
+
+        console.log(`[CLERK WEBHOOK] Organization successfully soft deleted for org ID: ${id}`);
+        
+        return NextResponse.json({
+          status: 200,
+          message: 'Organization deleted successfully',
+        });
+      } catch (error: any) {
+        console.error(`[CLERK WEBHOOK] Error deleting organization:`, error);
+        return NextResponse.json({
+          status: 400,
+          message: error.message,
+        });
+      }
+      break;
+
+    case 'organizationMembership.created':
+      try {
+        console.log(`[CLERK WEBHOOK] Processing organizationMembership.created event`);
+        
+        const membershipData = {
+          organization_id: payload?.data?.organization?.id,
+          user_id: payload?.data?.public_user_data?.user_id,
+          role: payload?.data?.role,
+        };
+        
+        console.log(`[CLERK WEBHOOK] Creating membership with data:`, membershipData);
+        
+        // Find the organization in our database
+        const [org] = await db.select({ id: organizations.id })
+          .from(organizations)
+          .where(eq(organizations.clerkOrganizationId, membershipData.organization_id));
+        
+        if (org) {
+          // Find the user by their Clerk ID
+          const [user] = await db.select({ id: users.id })
+            .from(users)
+            .where(eq(users.clerkUserId, membershipData.user_id));
+          
+          if (user) {
+            await db.insert(organizationMemberships).values({
+              organizationId: org.id,
+              userId: user.id,
+              clerkOrganizationId: membershipData.organization_id,
+              clerkUserId: membershipData.user_id,
+              role: membershipData.role,
+            });
+            console.log(`[CLERK WEBHOOK] Membership created successfully`);
+          }
+        }
+        
+        return NextResponse.json({
+          status: 200,
+          message: 'Organization membership created successfully',
+        });
+      } catch (error: any) {
+        console.error(`[CLERK WEBHOOK] Error creating organization membership:`, error);
+        return NextResponse.json({
+          status: 400,
+          message: error.message,
+        });
+      }
+      break;
+
+    case 'organizationMembership.deleted':
+      try {
+        console.log(`[CLERK WEBHOOK] Processing organizationMembership.deleted event`);
+        
+        const membershipData = {
+          organization_id: payload?.data?.organization?.id,
+          user_id: payload?.data?.public_user_data?.user_id,
+        };
+        
+        // Find the organization in our database
+        const [org] = await db.select({ id: organizations.id })
+          .from(organizations)
+          .where(eq(organizations.clerkOrganizationId, membershipData.organization_id));
+        
+        if (org) {
+          await db.delete(organizationMemberships)
+            .where(
+              and(
+                eq(organizationMemberships.organizationId, org.id),
+                eq(organizationMemberships.clerkUserId, membershipData.user_id)
+              )
+            );
+          console.log(`[CLERK WEBHOOK] Membership deleted successfully`);
+        }
+        
+        return NextResponse.json({
+          status: 200,
+          message: 'Organization membership deleted successfully',
+        });
+      } catch (error: any) {
+        console.error(`[CLERK WEBHOOK] Error deleting organization membership:`, error);
         return NextResponse.json({
           status: 400,
           message: error.message,

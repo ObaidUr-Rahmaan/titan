@@ -6,18 +6,19 @@ const userCreateSchema = z.object({
   email: z.string().email({ message: 'Invalid email' }).describe('user email'),
   first_name: z
     .string()
-    .regex(/^[a-zA-Z]+$/, { message: 'First name must only contain letters' })
-    .min(3, { message: 'First name is required' })
+    .min(1, { message: 'First name is required' })
+    .optional()
     .describe('user first name'),
   last_name: z
     .string()
-    .regex(/^[a-zA-Z]+$/, { message: 'Last name must only contain letters' })
-    .min(3, { message: 'Last name is required' })
+    .min(1, { message: 'Last name is required' })
+    .optional()
     .describe('user last name'),
   profile_image_url: z
     .string()
     .url({ message: 'Invalid URL' })
     .optional()
+    .nullable()
     .describe('user profile image URL'),
   user_id: z.string().describe('user ID'),
 });
@@ -32,16 +33,19 @@ const userUpdateSchema = z.object({
     .describe('user email'),
   first_name: z
     .string()
-    .regex(/^[a-zA-Z]+$/, { message: 'First name must only contain letters' })
+    .min(1, { message: 'First name is required' })
+    .optional()
     .describe('user first name'),
   last_name: z
     .string()
-    .regex(/^[a-zA-Z]+$/, { message: 'Last name must only contain letters' })
+    .min(1, { message: 'Last name is required' })
+    .optional()
     .describe('user last name'),
   profile_image_url: z
     .string()
     .url({ message: 'Invalid URL' })
     .optional()
+    .nullable()
     .describe('user profile image URL'),
   user_id: z.string().describe('user ID'),
 });

@@ -1,11 +1,141 @@
 import { createServerClient } from '@/lib/drizzle';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { upgradeUserFromTrialToPaid, expireUserSubscription } from '@/utils/data/user/subscription-status';
+import { createDirectClient } from '@/lib/drizzle';
+import { subscriptionChanges, subscriptions, organizations, users } from '@/db/schema';
+import { eq, and, or } from 'drizzle-orm';
+import { 
+  logSubscriptionCreated, 
+  logSubscriptionDowngraded, 
+  logSubscriptionCancelled,
+  logPaymentSucceeded, 
+  logPaymentFailed,
+  logTrialToPaidUpgrade 
+} from '@/utils/billing-activity-logger';
+import { 
+  createSubscription, 
+  updateSubscription, 
+  cancelSubscription,
+  type SubscriptionContext,
+  type CreateSubscriptionParams,
+  type UpdateSubscriptionParams
+} from '@/utils/subscription-management';
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : undefined;
+
+/**
+ * Mark subscription changes as completed when webhook confirms the change
+ */
+async function markSubscriptionChangeCompleted(
+  subscriptionId: string,
+  newTier: string,
+  userId?: string
+): Promise<void> {
+  try {
+    const db = createDirectClient()
+    const { users } = await import('@/db/schema')
+
+    // Get the scheduled change info before updating (for email purposes)
+    const [scheduledChange] = await db
+      .select({
+        id: subscriptionChanges.id,
+        fromTier: subscriptionChanges.fromTier,
+        toTier: subscriptionChanges.toTier,
+        changeType: subscriptionChanges.changeType,
+        userId: subscriptionChanges.userId,
+      })
+      .from(subscriptionChanges)
+      .where(
+        and(
+          eq(subscriptionChanges.stripeSubscriptionId, subscriptionId),
+          eq(subscriptionChanges.toTier, newTier),
+          eq(subscriptionChanges.changeStatus, 'scheduled')
+        )
+      )
+      .limit(1)
+
+    // Mark any pending/scheduled changes as completed
+    await db
+      .update(subscriptionChanges)
+      .set({
+        changeStatus: 'completed',
+        processedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(subscriptionChanges.stripeSubscriptionId, subscriptionId),
+          eq(subscriptionChanges.toTier, newTier),
+          // Only update pending or scheduled changes
+          eq(subscriptionChanges.changeStatus, 'scheduled')
+        )
+      )
+
+    // If we have a userId, also update their subscription tier and clear pending changes
+    if (userId) {
+      await db
+        .update(users)
+        .set({
+          subscriptionTier: newTier,
+          pendingSubscriptionChange: null,
+          lastPlanChangeDate: new Date(),
+        })
+        .where(eq(users.userId, userId))
+      
+      console.log(`[STRIPE WEBHOOK] User ${userId} subscription tier updated to ${newTier} (scheduled change completed)`)
+      
+      // Log downgrade completion activity
+      if (scheduledChange && scheduledChange.changeType === 'downgrade') {
+        await logSubscriptionDowngraded(
+          userId,
+          scheduledChange.fromTier || 'unknown',
+          newTier,
+          subscriptionId,
+          'webhook'
+        );
+      }
+    }
+
+    console.log(`[STRIPE WEBHOOK] Subscription change marked as completed for ${subscriptionId} -> ${newTier}`)
+  } catch (error) {
+    console.error(`[STRIPE WEBHOOK] Error marking subscription change as completed:`, error)
+  }
+}
+
+/**
+ * Mark subscription changes as failed when webhook processing fails
+ */
+async function markSubscriptionChangeFailed(
+  subscriptionId: string,
+  errorMessage: string
+): Promise<void> {
+  try {
+    const db = createDirectClient()
+    const { subscriptionChanges } = await import('@/db/schema')
+    const { eq } = await import('drizzle-orm')
+
+    // Mark any pending changes for this subscription as failed
+    await db
+      .update(subscriptionChanges)
+      .set({
+        changeStatus: 'failed',
+        updatedAt: new Date(),
+        metadata: JSON.stringify({
+          error: errorMessage,
+          failedAt: new Date().toISOString()
+        })
+      })
+      .where(eq(subscriptionChanges.stripeSubscriptionId, subscriptionId));
+    
+    console.log(`[STRIPE WEBHOOK] Marked subscription changes as failed for subscription: ${subscriptionId}`);
+  } catch (error) {
+    console.error(`[STRIPE WEBHOOK] Error marking subscription change as failed:`, error);
+  }
+}
 
 export async function POST(req: NextRequest) {
   console.log(`[STRIPE WEBHOOK] Received webhook request at ${new Date().toISOString()}`);
@@ -54,6 +184,20 @@ async function handleSubscriptionEvent(
   const subscription = event.data.object as Stripe.Subscription;
   console.log(`[STRIPE WEBHOOK] Subscription ID: ${subscription.id}, Status: ${subscription.status}`);
   
+  // Determine subscription context (individual or organization)
+  const context: SubscriptionContext = subscription.metadata?.organizationId ? 'organization' : 'individual';
+  const contextId = subscription.metadata?.organizationId || subscription.metadata?.userId;
+  
+  console.log(`[STRIPE WEBHOOK] Subscription context: ${context}, Context ID: ${contextId}`);
+  
+  if (!contextId) {
+    console.error(`[STRIPE WEBHOOK] Missing context ID in subscription metadata for ${subscription.id}`);
+    return NextResponse.json({
+      status: 400,
+      error: 'Missing context ID in subscription metadata',
+    });
+  }
+
   const customerEmail = await getCustomerEmail(subscription.customer as string, stripe);
 
   if (!customerEmail) {
@@ -64,67 +208,124 @@ async function handleSubscriptionEvent(
     });
   }
 
-  const subscriptionData: any = {
-    subscription_id: subscription.id,
-    stripe_user_id: subscription.customer,
-    status: subscription.status,
-    start_date: new Date(subscription.created * 1000).toISOString(),
-    plan_id: subscription.items.data[0]?.price.id,
-    user_id: subscription.metadata?.userId || '',
-    email: customerEmail,
-  };
+  console.log(`[STRIPE WEBHOOK] Processing ${context} subscription with ID: ${subscription.id}`);
 
-  console.log(`[STRIPE WEBHOOK] Processing subscription with data:`, subscriptionData);
-
-  let data, error;
-  if (type === 'deleted') {
-    console.log(`[STRIPE WEBHOOK] Updating subscription to cancelled: ${subscription.id}`);
-    ({ data, error } = await supabase
-      .from('subscriptions')
-      .update({ status: 'cancelled', email: customerEmail })
-      .match({ subscription_id: subscription.id })
-      .select());
-    
-    if (!error) {
-      console.log(`[STRIPE WEBHOOK] Updating user subscription to null for email: ${customerEmail}`);
-      const { error: userError } = await supabase
-        .from('user')
-        .update({ subscription: null })
-        .eq('email', customerEmail);
+  try {
+    // Use subscription management service for organization/individual subscriptions
+    if (type === 'deleted') {
+      console.log(`[STRIPE WEBHOOK] Cancelling ${context} subscription: ${subscription.id}`);
       
-      if (userError) {
-        console.error(`[STRIPE WEBHOOK] Error updating user subscription status:`, userError);
-        return NextResponse.json({
-          status: 500,
-          error: 'Error updating user subscription status',
-        });
+      const result = await cancelSubscription(subscription.id, true);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to cancel subscription');
       }
-      console.log(`[STRIPE WEBHOOK] User subscription status updated to null for email: ${customerEmail}`);
+      
+      console.log(`[STRIPE WEBHOOK] Successfully cancelled ${context} subscription for ${contextId}`);
+      
+    } else if (type === 'created') {
+      console.log(`[STRIPE WEBHOOK] Creating ${context} subscription: ${subscription.id}`);
+      
+      const priceId = subscription.items.data[0]?.price.id;
+      const planId = subscription.metadata?.planId || priceId;
+      
+      const createParams: CreateSubscriptionParams = {
+        context,
+        subscriptionId: subscription.id,
+        stripeCustomerId: subscription.customer as string,
+        planId,
+        status: subscription.status,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        quantity: subscription.items.data[0]?.quantity || 1,
+        email: customerEmail,
+      };
+      
+      // Add context-specific parameters
+      if (context === 'organization') {
+        createParams.organizationId = parseInt(contextId);
+        createParams.seatLimit = subscription.metadata?.seatLimit ? parseInt(subscription.metadata.seatLimit) : 10;
+      } else {
+        createParams.clerkUserId = contextId;
+      }
+      
+      const result = await createSubscription(createParams);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create subscription');
+      }
+      
+      console.log(`[STRIPE WEBHOOK] Successfully created ${context} subscription for ${contextId}`);
+      
+    } else if (type === 'updated') {
+      console.log(`[STRIPE WEBHOOK] Updating ${context} subscription: ${subscription.id}`);
+      
+      const planId = subscription.metadata?.planId || subscription.items.data[0]?.price.id;
+      
+      const updateParams: UpdateSubscriptionParams = {
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        planId,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        quantity: subscription.items.data[0]?.quantity || 1,
+      };
+      
+      // Add organization-specific parameters
+      if (context === 'organization' && subscription.metadata?.seatLimit) {
+        updateParams.seatLimit = parseInt(subscription.metadata.seatLimit);
+      }
+      
+      const result = await updateSubscription(updateParams);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update subscription');
+      }
+      
+      console.log(`[STRIPE WEBHOOK] Successfully updated ${context} subscription for ${contextId}`);
     }
-  } else {
-    console.log(`[STRIPE WEBHOOK] ${type === 'created' ? 'Inserting' : 'Updating'} subscription: ${subscription.id}`);
-    ({ data, error } = await supabase
-      .from('subscriptions')
-      [type === 'created' ? 'insert' : 'update'](
-        type === 'created' ? [subscriptionData] : subscriptionData
-      )
-      .match({ subscription_id: subscription.id })
-      .select());
-  }
 
-  if (error) {
-    console.error(`[STRIPE WEBHOOK] Error during subscription ${type}:`, error);
+  } catch (serviceError) {
+    console.error(`[STRIPE WEBHOOK] Error in subscription management service:`, serviceError);
     return NextResponse.json({
       status: 500,
-      error: `Error during subscription ${type}`,
+      error: `Error processing ${context} subscription ${type}`,
     });
+  }
+
+  // Log billing activity based on subscription type and status
+  try {
+    const userId = subscription.metadata?.userId || customerEmail;
+    const planName = subscription.items.data[0]?.price.nickname || 'Unknown Plan';
+    
+    if (type === 'created') {
+      await logSubscriptionCreated(userId, planName, subscription.id, 'webhook');
+      
+      // Check if this is a trial to paid upgrade
+      if (subscription.status === 'active' && subscription.trial_end) {
+        await logTrialToPaidUpgrade(userId, planName, subscription.id, 'webhook');
+        await upgradeUserFromTrialToPaid(userId, planName, subscription.id);
+      }
+    } else if (type === 'deleted') {
+      await logSubscriptionCancelled(userId, planName, subscription.id, undefined, 'webhook');
+    } else if (type === 'updated') {
+      // Handle subscription updates (upgrades/downgrades)
+      if (subscription.status === 'active') {
+        // This could be an upgrade or downgrade - would need previous state to determine
+        console.log(`[STRIPE WEBHOOK] Subscription updated for user ${userId} to plan ${planName}`);
+      }
+    }
+  } catch (activityError) {
+    console.error(`[STRIPE WEBHOOK] Error logging billing activity:`, activityError);
+    // Don't fail the webhook for logging errors
   }
 
   console.log(`[STRIPE WEBHOOK] Subscription ${type} processed successfully for ID: ${subscription.id}`);
   return NextResponse.json({
     status: 200,
     message: `Subscription ${type} success`,
-    data,
   });
 }
 
@@ -174,6 +375,22 @@ async function handleInvoiceEvent(
       status: 500,
       error: `Error inserting invoice (payment ${status})`,
     });
+  }
+
+  // Log billing activity for payment events
+  try {
+    const userId = invoice.metadata?.userId || customerEmail;
+    const amount = status === 'succeeded' ? invoice.amount_paid : invoice.amount_due || 0;
+    const currency = invoice.currency;
+    
+    if (status === 'succeeded') {
+      await logPaymentSucceeded(userId, amount, currency, invoice.id, invoice.subscription as string);
+    } else if (status === 'failed') {
+      await logPaymentFailed(userId, amount, currency, invoice.id, 'Payment failed', invoice.subscription as string);
+    }
+  } catch (activityError) {
+    console.error(`[STRIPE WEBHOOK] Error logging payment activity:`, activityError);
+    // Don't fail the webhook for logging errors
   }
 
   console.log(`[STRIPE WEBHOOK] Invoice payment ${status} recorded successfully for ID: ${invoice.id}`);

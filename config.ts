@@ -1,12 +1,15 @@
 const config = {
   auth: {
-    enabled: false,
+    enabled: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? true : false,
+    trialCheckEnabled: false, // Disabled due to Supabase API key issues
+    redirectAfterSignIn: '/dashboard',
+    redirectAfterSignUp: '/onboarding',
   },
   payments: {
-    enabled: false,
+    enabled: true,
   },
   email: {
-    enabled: false,
+    enabled: true,
   },
 };
 
