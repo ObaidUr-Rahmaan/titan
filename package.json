@@ -6,7 +6,6 @@
     "dev:fast": "next dev --turbopack",
     "dev:scan": "REACT_SCAN_ENABLED=true next dev --turbopack & sleep 5 && npx react-scan@latest localhost:3000",
     "scan": "npx react-scan@latest http://localhost:3000",
-    "dev:performance": "next dev --turbopack",
     "dev:clean": "rm -rf .next && rm -rf node_modules/.cache && next dev --turbopack",
     "dev:reset-and-run": "bunx dotenv -e .env.local -- bun db:reset && bunx dotenv -e .env.local -- bun dev:clean",
     "prod:reset": "bunx dotenv -e .env -- bun db:reset",
