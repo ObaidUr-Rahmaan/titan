@@ -8,7 +8,9 @@ import { useOrganizationBillingGuard } from '@/utils/hooks/use-organization-guar
 import { OrganizationSubscriptionCard, OrganizationSeatManagement } from '@/components/organizations';
 
 export default function OrganizationBillingPage() {
-  const { isLoading, hasAccess, error } = useOrganizationBillingGuard();
+  const { isLoading, hasAccess, error } = useOrganizationBillingGuard({
+    redirectOnError: false // Disable automatic redirect to prevent infinite loop
+  });
 
   if (isLoading) {
     return (

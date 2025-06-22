@@ -8,9 +8,9 @@ import { OrganizationProvider } from './_components/organization-provider';
 
 interface OrganizationLayoutProps {
   children: ReactNode;
-  params: {
+  params: Promise<{
     orgSlug: string;
-  };
+  }>;
 }
 
 export default async function OrganizationLayout({ 
@@ -18,16 +18,26 @@ export default async function OrganizationLayout({
   params 
 }: OrganizationLayoutProps) {
   try {
+    // Await params as required by Next.js 15
+    const { orgSlug } = await params;
+
     // Get current user
     const user = await currentUser();
     if (!user) {
       redirect('/sign-in');
     }
 
+    // Handle special organization creation cases
+    if (orgSlug === 'new' || orgSlug === 'create' || orgSlug === 'new-org') {
+      // User is trying to access organization creation, redirect to dashboard with create modal
+      redirect('/dashboard?create-org=true');
+    }
+
     // Get organization by slug and validate membership
-    const orgResult = await getOrganizationBySlug(params.orgSlug);
+    const orgResult = await getOrganizationBySlug(orgSlug);
     if (!orgResult.success || !orgResult.data) {
       // Organization not found or user doesn't have access
+      console.log(`Organization not found for slug: ${orgSlug}`, orgResult.error);
       redirect('/dashboard?error=organization-not-found');
     }
 
@@ -38,7 +48,7 @@ export default async function OrganizationLayout({
     await requireOrganization(organization.clerkOrganizationId);
 
     return (
-      <OrganizationProvider organizationId={organization.id.toString()} organizationSlug={params.orgSlug}>
+      <OrganizationProvider organizationId={organization.id.toString()} organizationSlug={orgSlug}>
         <div className="min-h-screen w-full bg-background">
           <OrgDashboardTopNav organization={organization}>
             <main className="mx-auto max-w-7xl w-full p-4 sm:p-6 lg:p-8">

@@ -87,7 +87,7 @@ export async function getOrganizationContext(orgId?: string): Promise<Organizati
     // Get user from our database
     const [dbUser] = await db.select()
       .from(users)
-      .where(eq(users.userId, userId));
+      .where(eq(users.clerkUserId, userId));
 
     if (!dbUser) {
       throw new OrganizationError('User not found in database', 'USER_NOT_IN_DB');

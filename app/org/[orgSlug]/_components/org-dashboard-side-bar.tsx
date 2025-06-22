@@ -52,17 +52,30 @@ export default function OrgDashboardSideBar({ organization }: OrgDashboardSideBa
   ];
 
   return (
-    <div className="lg:block hidden border-r h-full w-64 bg-white dark:bg-gray-900">
+    <div 
+      className="lg:block hidden border-r h-full w-64" 
+      style={{ 
+        backgroundColor: '#0f172a', 
+        borderColor: '#374151',
+        color: '#f8fafc'
+      }}
+    >
       <div className="flex h-full max-h-screen flex-col gap-2">
         {/* Organization header */}
-        <div className="flex h-[60px] items-center justify-between border-b px-4 w-full">
+        <div 
+          className="flex h-[60px] items-center justify-between border-b px-4 w-full"
+          style={{ 
+            borderColor: '#374151',
+            backgroundColor: '#0f172a'
+          }}
+        >
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <div className="p-2 bg-blue-900 rounded-lg">
+              <Building2 className="h-4 w-4 text-blue-400" />
             </div>
             <div className="flex flex-col">
-              <span className="font-semibold text-sm truncate max-w-[140px]">{organization.name}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">{organization.membership?.role}</span>
+              <span className="font-semibold text-sm truncate max-w-[140px]" style={{ color: '#f8fafc' }}>{organization.name}</span>
+              <span className="text-xs capitalize" style={{ color: '#9ca3af' }}>{organization.membership?.role}</span>
             </div>
           </div>
         </div>
@@ -77,27 +90,32 @@ export default function OrgDashboardSideBar({ organization }: OrgDashboardSideBa
               return (
                 <Link
                   key={item.href}
-                  className={clsx(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50',
-                    {
-                      'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50': isActive,
-                    }
-                  )}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+                  style={{
+                    color: isActive ? '#f8fafc' : '#9ca3af',
+                    backgroundColor: isActive ? '#374151' : 'transparent'
+                  }}
                   href={item.href}
                 >
-                  <div className="border rounded-lg dark:bg-black dark:border-gray-800 border-gray-400 p-1 bg-white">
+                  <div 
+                    className="border rounded-lg p-1"
+                    style={{
+                      backgroundColor: '#1f2937',
+                      borderColor: '#374151'
+                    }}
+                  >
                     <Icon className="h-3 w-3" />
                   </div>
                   <div className="flex flex-col">
                     <span>{item.label}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">{item.description}</span>
+                    <span className="text-xs" style={{ color: '#6b7280' }}>{item.description}</span>
                   </div>
                 </Link>
               );
             })}
           </nav>
 
-          <Separator className="my-3 mx-4" />
+          <Separator className="my-3 mx-4" style={{ backgroundColor: '#374151' }} />
 
           {/* Settings section */}
           <nav className="grid items-start px-4 text-sm font-medium">
@@ -108,20 +126,25 @@ export default function OrgDashboardSideBar({ organization }: OrgDashboardSideBa
               return (
                 <Link
                   key={item.href}
-                  className={clsx(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50',
-                    {
-                      'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50': isActive,
-                    }
-                  )}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
+                  style={{
+                    color: isActive ? '#f8fafc' : '#9ca3af',
+                    backgroundColor: isActive ? '#374151' : 'transparent'
+                  }}
                   href={item.href}
                 >
-                  <div className="border rounded-lg dark:bg-black dark:border-gray-800 border-gray-400 p-1 bg-white">
+                  <div 
+                    className="border rounded-lg p-1"
+                    style={{
+                      backgroundColor: '#1f2937',
+                      borderColor: '#374151'
+                    }}
+                  >
                     <Icon className="h-3 w-3" />
                   </div>
                   <div className="flex flex-col">
                     <span>{item.label}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">{item.description}</span>
+                    <span className="text-xs" style={{ color: '#6b7280' }}>{item.description}</span>
                   </div>
                 </Link>
               );

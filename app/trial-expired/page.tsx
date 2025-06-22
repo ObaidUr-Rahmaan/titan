@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, CreditCard, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import config from '@/config';
 
 export default function TrialExpiredPage() {
   const { isLoaded, userId } = useAuth();
@@ -24,6 +25,12 @@ export default function TrialExpiredPage() {
 
     // Check if user actually has an expired trial
     const checkTrialStatus = async () => {
+      // Skip trial check if disabled in config
+      if (!config.auth.trialCheckEnabled) {
+        router.replace('/dashboard');
+        return;
+      }
+
       try {
         const response = await fetch('/api/user/trial-info', {
           method: 'POST',

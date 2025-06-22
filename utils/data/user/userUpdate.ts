@@ -17,12 +17,12 @@ export const userUpdate = async ({
     const updated = await db.update(users)
       .set({
         email,
-        firstName: first_name,
-        lastName: last_name,
-        profileImageUrl: profile_image_url,
-        userId: user_id,
+        firstName: first_name || null,
+        lastName: last_name || null,
+        profileImageUrl: profile_image_url || null,
+        // Don't update clerkUserId as it shouldn't change
       })
-      .where(eq(users.email, email))
+      .where(eq(users.clerkUserId, user_id)) // Update by clerkUserId, not email
       .returning();
 
     if (updated.length > 0) return updated[0];

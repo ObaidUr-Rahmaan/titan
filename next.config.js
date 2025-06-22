@@ -34,20 +34,21 @@ const nextConfig = {
     
     // Faster development builds
     webpackBuildWorker: true,
-    
-    // Turbopack configuration for development
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+  
+  // Turbopack configuration for development (moved from experimental.turbo)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
+  
   allowedDevOrigins: [
     // Add your specific ngrok URL here when using it
-    '8115746baf52.ngrok.app',
+    'c9061538bbea.ngrok.app',
     // You'll need to update this with your actual ngrok URL when it changes
   ],
   images: {

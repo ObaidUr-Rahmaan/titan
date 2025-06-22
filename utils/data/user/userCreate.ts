@@ -17,10 +17,11 @@ export const userCreate = async ({
     const newUser = await db.insert(users)
       .values({
         email,
-        firstName: first_name,
-        lastName: last_name,
-        profileImageUrl: profile_image_url,
-        userId: user_id,
+        firstName: first_name || null,
+        lastName: last_name || null,
+        profileImageUrl: profile_image_url || null,
+        clerkUserId: user_id, // Map Clerk user ID to clerkUserId field
+        // userId field will auto-generate a CUID2
       })
       .returning();
 

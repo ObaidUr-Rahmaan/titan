@@ -1,16 +1,45 @@
 'use client';
 
 import { useOrganization } from '@clerk/nextjs';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ArrowUpRight, LineChart, Users, Activity, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { BarChartBetter } from './bar-chart-better';
 import { TestPaymentButton } from './test-payment-button';
 import { OrganizationDashboard } from '@/components/organizations';
+import { OrganizationCreationForm } from '@/components/organizations/organization-creation-form';
 
 export default function DashboardContent() {
   const { organization, isLoaded } = useOrganization();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [showCreateOrg, setShowCreateOrg] = useState(false);
+
+  // Check for create-org parameter
+  useEffect(() => {
+    if (searchParams.get('create-org') === 'true') {
+      setShowCreateOrg(true);
+    }
+  }, [searchParams]);
+
+  // Handle closing the modal
+  const handleCloseModal = () => {
+    setShowCreateOrg(false);
+    // Remove the create-org parameter from URL
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.delete('create-org');
+    router.replace(newUrl.pathname + newUrl.search);
+  };
+
+  // Handle successful organization creation
+  const handleOrgCreated = (organizationId: number) => {
+    setShowCreateOrg(false);
+    // The organization creation form should handle the redirect
+  };
 
   // Show loading state while Clerk is loading
   if (!isLoaded) {
@@ -45,7 +74,8 @@ export default function DashboardContent() {
 
   // Otherwise, show personal dashboard
   return (
-    <div className="space-y-8">
+    <>
+      <div className="space-y-8">
       {/* Page Header with Test Payment Button */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Personal Dashboard</h1>
@@ -151,5 +181,22 @@ export default function DashboardContent() {
         </CardContent>
       </Card>
     </div>
+
+    {/* Organization Creation Modal */}
+    <Dialog open={showCreateOrg} onOpenChange={setShowCreateOrg}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Create New Organization</DialogTitle>
+          <DialogDescription>
+            Set up a new organization to collaborate with your team and manage projects together.
+          </DialogDescription>
+        </DialogHeader>
+        <OrganizationCreationForm 
+          onSuccess={handleOrgCreated}
+          onCancel={handleCloseModal}
+        />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 } 

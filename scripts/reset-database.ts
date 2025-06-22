@@ -41,35 +41,38 @@ async function resetDatabase() {
       console.log(`   ✅ RLS disabled on ${tablename}`)
     }
     
-    // Step 3: Drop all application tables
-    console.log('\n🗑️  Dropping all application tables...')
+    // Step 3: Drop all tables in public schema (except system tables)
+    console.log('\n🗑️  Dropping all tables in public schema...')
     
-    const applicationTables = [
-      'refunds',
-      'invoices', 
-      'subscriptions',
-      'payments',
-      'user',
-      'subscriptions_plans'
-    ]
+    const allTables = await db.execute(sql`
+      SELECT tablename 
+      FROM pg_tables 
+      WHERE schemaname = 'public'
+      AND tablename NOT LIKE 'pg_%'
+      AND tablename NOT LIKE 'sql_%'
+      AND tablename NOT LIKE 'information_%'
+    `)
     
-    for (const table of applicationTables) {
-      await db.execute(sql.raw(`DROP TABLE IF EXISTS "${table}" CASCADE`))
-      console.log(`   ✅ Dropped table: ${table}`)
+    for (const table of allTables) {
+      const tablename = (table as any).tablename
+      await db.execute(sql.raw(`DROP TABLE IF EXISTS "${tablename}" CASCADE`))
+      console.log(`   ✅ Dropped table: ${tablename}`)
     }
     
-    // Step 4: Drop custom types if they exist
-    console.log('\n🗑️  Dropping custom types...')
+    // Step 4: Drop all custom types in public schema
+    console.log('\n🗑️  Dropping all custom types...')
     
-    const customTypes = [
-      'subscription_status',
-      'payment_status',
-      'refund_status'
-    ]
+    const allTypes = await db.execute(sql`
+      SELECT typname 
+      FROM pg_type 
+      WHERE typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
+      AND typtype = 'e'
+    `)
     
-    for (const type of customTypes) {
-      await db.execute(sql.raw(`DROP TYPE IF EXISTS ${type} CASCADE`))
-      console.log(`   ✅ Dropped type: ${type}`)
+    for (const type of allTypes) {
+      const typename = (type as any).typname
+      await db.execute(sql.raw(`DROP TYPE IF EXISTS "${typename}" CASCADE`))
+      console.log(`   ✅ Dropped type: ${typename}`)
     }
     
     // Step 5: Clean up any remaining sequences

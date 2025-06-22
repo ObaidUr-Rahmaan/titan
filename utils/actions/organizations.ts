@@ -174,7 +174,7 @@ export async function getOrganizationBySlug(slug: string): Promise<ActionResult<
     const [user] = await db
       .select({ id: users.id })
       .from(users)
-      .where(eq(users.userId, userId));
+      .where(eq(users.clerkUserId, userId));
 
     if (!user) {
       return { success: false, error: 'User not found in database' };

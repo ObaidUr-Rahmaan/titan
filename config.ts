@@ -1,7 +1,7 @@
 const config = {
   auth: {
     enabled: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? true : false,
-    trialCheckEnabled: true,
+    trialCheckEnabled: false, // Disabled due to Supabase API key issues
     redirectAfterSignIn: '/dashboard',
     redirectAfterSignUp: '/onboarding',
   },

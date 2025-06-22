@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { extractOrgSlugFromPath, isOrganizationPath } from '@/utils/auth/route-guards';
 
@@ -37,6 +37,7 @@ export function useOrganizationGuard(options: UseOrganizationGuardOptions = {}):
 
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { organization, membership, isLoaded: orgLoaded } = useOrganization();
   const { isLoaded: userLoaded, isSignedIn } = useUser();
 
@@ -62,6 +63,12 @@ export function useOrganizationGuard(options: UseOrganizationGuardOptions = {}):
 
   const organizationSlug = extractOrgSlugFromPath(pathname);
   const isOrgRoute = isOrganizationPath(pathname);
+  
+  // Check if we're already on an error page to prevent infinite redirects
+  const errorParam = searchParams.get('error');
+  const isOnErrorPage = errorParam === 'insufficient-permissions' || 
+                       errorParam === 'organization-not-found' ||
+                       errorParam === 'organization-mismatch';
 
   useEffect(() => {
     async function validateAccess() {
@@ -79,7 +86,7 @@ export function useOrganizationGuard(options: UseOrganizationGuardOptions = {}):
           error: 'User not authenticated'
         });
         
-        if (redirectOnError) {
+        if (redirectOnError && !isOnErrorPage) {
           router.push('/sign-in');
         }
         return;
@@ -103,7 +110,7 @@ export function useOrganizationGuard(options: UseOrganizationGuardOptions = {}):
           error: 'Organization not found or access denied'
         });
         
-        if (redirectOnError) {
+        if (redirectOnError && !isOnErrorPage) {
           router.push(`${fallbackUrl}?error=organization-not-found`);
         }
         return;
@@ -117,7 +124,7 @@ export function useOrganizationGuard(options: UseOrganizationGuardOptions = {}):
           error: 'Organization slug mismatch'
         });
         
-        if (redirectOnError) {
+        if (redirectOnError && !isOnErrorPage) {
           router.push(`${fallbackUrl}?error=organization-mismatch`);
         }
         return;
@@ -135,7 +142,8 @@ export function useOrganizationGuard(options: UseOrganizationGuardOptions = {}):
             error: `Minimum role required: ${minRole}`
           });
           
-          if (redirectOnError) {
+          // Only redirect if not already on an error page to prevent infinite loops
+          if (redirectOnError && !isOnErrorPage) {
             router.push(`/org/${organizationSlug}/dashboard?error=insufficient-permissions`);
           }
           return;
@@ -156,7 +164,7 @@ export function useOrganizationGuard(options: UseOrganizationGuardOptions = {}):
             error: `Missing permissions: ${missingPermissions.join(', ')}`
           });
           
-          if (redirectOnError) {
+          if (redirectOnError && !isOnErrorPage) {
             router.push(`/org/${organizationSlug}/dashboard?error=insufficient-permissions`);
           }
           return;
@@ -181,9 +189,10 @@ export function useOrganizationGuard(options: UseOrganizationGuardOptions = {}):
     organizationSlug,
     isOrgRoute,
     minRole,
-    requiredPermissions,
+    requiredPermissions?.join(','), // Stabilize array dependency
     redirectOnError,
     fallbackUrl,
+    isOnErrorPage, // This is now stable
     router
   ]);
 

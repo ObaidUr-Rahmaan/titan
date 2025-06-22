@@ -1,10 +1,17 @@
 'server only'
 
+import config from '@/config';
+
 /**
  * Quick trial status check for middleware usage
  * Uses API endpoint to avoid edge runtime issues with database clients
  */
 export async function isTrialExpiredForUser(userId: string): Promise<boolean> {
+  // Skip trial check if disabled in config
+  if (!config.auth.trialCheckEnabled) {
+    return false;
+  }
+
   try {
     // Use internal API call instead of direct database access to avoid edge runtime issues
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/user/trial-info`, {
@@ -41,6 +48,15 @@ export async function getUserSubscriptionStatus(userId: string): Promise<{
   subscriptionStatus: string
   isExpired: boolean
 }> {
+  // Skip trial check if disabled in config
+  if (!config.auth.trialCheckEnabled) {
+    return {
+      isTrial: false,
+      subscriptionStatus: 'active',
+      isExpired: false
+    };
+  }
+
   try {
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/user/trial-info`, {
       method: 'POST',
