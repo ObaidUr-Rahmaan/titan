@@ -43,17 +43,19 @@ TypeScript Usage
 - Mark server-only files with 'server only' directive.
 
 Database Patterns
+- **Always connect to remote Supabase instance - never use local Docker setup**
+- **When running Supabase CLI commands, always use `--linked` flag or ensure connection to remote project**
 - Server-side operations:
   ```typescript
   import { createServerActionClient } from '@/lib/supabase'
   const supabase = await createServerActionClient()
-  // Uses SUPABASE_SERVICE_ROLE_KEY
+  // Uses SUPABASE_SERVICE_ROLE_KEY (remote connection)
   ```
 - Client-side operations:
   ```typescript
   import { createClient } from '@/lib/supabase'
   const supabase = createClient()
-  // Uses NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Uses NEXT_PUBLIC_SUPABASE_ANON_KEY (remote connection)
   ```
 
 Data Fetching Patterns
