@@ -88,7 +88,7 @@ const ProjectsData = [
     name: 'Tanstack Query',
     description:
       'Powerful data fetching library that handles caching, background updates and stale data out of the box.',
-    image: 'https://tanstack.com/_build/assets/logo-color-100w-br5_Ikqp.png',
+    image: '/icons-png/tanstack.png',
     svgContent: null,
     url: 'https://tanstack.com/query/v5',
   },
