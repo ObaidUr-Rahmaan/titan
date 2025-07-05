@@ -85,12 +85,6 @@ export function SecurityFeatures() {
       description: "API routes are protected with proper CORS headers to prevent unauthorized cross-origin requests.",
       delay: 0.6,
     },
-    {
-      icon: <Clock className="h-5 w-5" />,
-      name: "Dependency Scanning",
-      description: "Automatic GitHub Dependabot security scanning ensures your dependencies stay secure and up-to-date.",
-      delay: 0.7,
-    },
   ];
 
   return (
