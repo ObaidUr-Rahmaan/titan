@@ -226,7 +226,7 @@ function HeroGeometric({
                             Start Building
                         </a>
                         <a 
-                            href="https://blueprint.codeandcreed.tech/product-development/titan" 
+                            href="https://blueprint.codeandcreed.tech/building-with-titan/titan" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 md:py-3 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium transition-colors duration-300 text-sm sm:text-base"
